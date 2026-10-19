@@ -60,6 +60,17 @@ npm run start:dev           # http://localhost:3000/api
 
 Vérification : `http://localhost:3000/api/health` doit répondre `{"status":"ok"}`.
 
+Documentation de l'API (Swagger) : `http://localhost:3000/api/docs`.
+
+### Tests e2e
+
+Les tests e2e utilisent la base `moodly_test`, qui est vidée puis remplie à chaque lancement :
+
+```bash
+cp .env.test.example .env.test
+npm run test:e2e
+```
+
 | Commande | Rôle |
 |---|---|
 | `npm run build` | compile le projet |
