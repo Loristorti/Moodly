@@ -17,3 +17,21 @@ export function todayParis(now: Date = new Date()): Date {
 
   return new Date(`${get('year')}-${get('month')}-${get('day')}T00:00:00.000Z`);
 }
+
+/** Same day shifted by `days` (days stored at midnight UTC, so no time zone issue). */
+export function addDays(day: Date, days: number): Date {
+  const result = new Date(day);
+  result.setUTCDate(result.getUTCDate() + days);
+  return result;
+}
+
+/** "2026-10-19" */
+export function toIsoDate(day: Date): string {
+  return day.toISOString().slice(0, 10);
+}
+
+/** Monday to Friday. */
+export function isWorkingDay(day: Date): boolean {
+  const weekDay = day.getUTCDay();
+  return weekDay !== 0 && weekDay !== 6;
+}
