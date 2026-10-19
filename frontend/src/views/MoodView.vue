@@ -1,10 +1,11 @@
 <script setup lang="ts">
-import { onMounted, ref } from 'vue'
+import { computed, onMounted, ref } from 'vue'
 import { ApiError } from '@/api/client'
 import { getTodayStatus, submitMood } from '@/api/moods'
 import AppHeader from '@/components/AppHeader.vue'
 import MoodPicker from '@/components/MoodPicker.vue'
 import TagSelector from '@/components/TagSelector.vue'
+import { MOOD_SCORES, moodSoftColor } from '@/constants/mood'
 import type { MoodTag } from '@/types/api'
 
 type Step = 'loading' | 'form' | 'done' | 'error'
@@ -15,6 +16,17 @@ const tags = ref<MoodTag[]>([])
 const sending = ref(false)
 const error = ref<string | null>(null)
 const alreadyAnswered = ref(false)
+
+const today = new Date().toLocaleDateString('fr-FR', {
+  weekday: 'long',
+  day: 'numeric',
+  month: 'long',
+})
+
+const selectedMood = computed(() => MOOD_SCORES.find((mood) => mood.score === score.value))
+
+/** The page takes the soft color of the chosen mood */
+const tint = computed(() => (score.value === null ? 'transparent' : moodSoftColor(score.value)))
 
 async function loadTodayStatus() {
   step.value = 'loading'
@@ -53,61 +65,91 @@ onMounted(loadTodayStatus)
 </script>
 
 <template>
-  <AppHeader />
+  <div class="mood-screen" :style="{ '--tint': tint }">
+    <div class="mood-backdrop" aria-hidden="true"></div>
+    <AppHeader />
 
-  <main class="page mood-page">
-    <p v-if="step === 'loading'" class="muted center" role="status">Chargement…</p>
+    <main class="page mood-page">
+      <p v-if="step === 'loading'" class="muted center" role="status">Chargement…</p>
 
-    <section v-else-if="step === 'error'" class="card stack">
-      <p class="alert" role="alert">{{ error }}</p>
-      <button type="button" class="button button-secondary" @click="loadTodayStatus">
-        Réessayer
-      </button>
-    </section>
-
-    <section v-else-if="step === 'done'" class="card thanks" aria-live="polite">
-      <p class="thanks-emoji" aria-hidden="true">👋</p>
-      <h1>Merci, à demain 👋</h1>
-      <p class="muted">
-        {{
-          alreadyAnswered
-            ? 'Vous avez déjà renseigné votre humeur aujourd’hui.'
-            : 'Votre humeur du jour a bien été enregistrée, de façon anonyme.'
-        }}
-      </p>
-    </section>
-
-    <form v-else class="stack" @submit.prevent="send">
-      <section class="card stack">
-        <h1>Comment allez-vous aujourd’hui ?</h1>
-        <MoodPicker v-model="score" />
-      </section>
-
-      <section class="card stack">
-        <h2 class="section-title">
-          Qu’est-ce qui influence votre humeur ?
-          <span class="muted section-hint">Facultatif, 3 maximum</span>
-        </h2>
-        <TagSelector v-model="tags" />
-      </section>
-
-      <p class="notice">
-        🔒 Vos réponses sont anonymes : votre manager ne voit que des moyennes d’équipe.
-      </p>
-
-      <div class="send-bar">
-        <p v-if="error" class="alert" role="alert">{{ error }}</p>
-        <button type="submit" class="button button-primary" :disabled="score === null || sending">
-          {{ sending ? 'Envoi…' : 'Envoyer' }}
+      <section v-else-if="step === 'error'" class="card stack reveal">
+        <p class="alert" role="alert">{{ error }}</p>
+        <button type="button" class="button button-secondary" @click="loadTodayStatus">
+          Réessayer
         </button>
-      </div>
-    </form>
-  </main>
+      </section>
+
+      <section v-else-if="step === 'done'" class="thanks" aria-live="polite">
+        <p class="thanks-hand emoji reveal" aria-hidden="true">👋</p>
+        <h1 class="reveal" style="--order: 1">Merci, à demain 👋</h1>
+        <p class="muted reveal" style="--order: 2">
+          {{
+            alreadyAnswered
+              ? 'Vous avez déjà renseigné votre humeur aujourd’hui.'
+              : 'Votre humeur du jour a bien été enregistrée, de façon anonyme.'
+          }}
+        </p>
+      </section>
+
+      <form v-else class="stack" @submit.prevent="send">
+        <header class="mood-title reveal">
+          <p class="eyebrow">{{ today }}</p>
+          <h1>Comment allez-vous aujourd’hui&nbsp;?</h1>
+        </header>
+
+        <section class="card stack reveal" style="--order: 1">
+          <MoodPicker v-model="score" />
+          <p class="mood-feedback" aria-live="polite">
+            <template v-if="selectedMood">
+              <span class="emoji" aria-hidden="true">{{ selectedMood.emoji }}</span>
+              {{ selectedMood.label }}
+            </template>
+            <template v-else>Touchez l’émoji qui vous ressemble.</template>
+          </p>
+        </section>
+
+        <section class="card stack reveal" style="--order: 2">
+          <h2 class="section-title">
+            Qu’est-ce qui joue sur votre humeur&nbsp;?
+            <span class="section-hint">Facultatif · jusqu’à 3 thèmes</span>
+          </h2>
+          <TagSelector v-model="tags" />
+        </section>
+
+        <p class="notice reveal" style="--order: 3">
+          <span class="emoji" aria-hidden="true">🔒</span>
+          <span>Vos réponses sont anonymes : votre manager ne voit que des moyennes d’équipe.</span>
+        </p>
+
+        <div class="send-bar">
+          <p v-if="error" class="alert" role="alert">{{ error }}</p>
+          <button type="submit" class="button button-primary" :disabled="score === null || sending">
+            {{ sending ? 'Envoi…' : 'Envoyer' }}
+          </button>
+        </div>
+      </form>
+    </main>
+  </div>
 </template>
 
 <style scoped>
+.mood-screen {
+  min-height: 100vh;
+  min-height: 100dvh;
+  transition: --tint 0.6s ease;
+}
+
+/* Soft glow of the chosen mood's color at the top of the screen */
+.mood-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  background: radial-gradient(120% 60% at 50% 0%, var(--tint), transparent 75%);
+}
+
 .mood-page {
-  padding-bottom: 24px;
+  padding-bottom: 16px;
 }
 
 .stack {
@@ -120,20 +162,40 @@ onMounted(loadTodayStatus)
   text-align: center;
 }
 
-h1 {
-  font-size: 1.35rem;
+.mood-title {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 4px 4px 0;
+}
+
+.mood-title h1 {
+  font-size: 1.9rem;
+}
+
+.mood-feedback {
+  min-height: 1.6em;
+  font-family: var(--font-display);
+  font-size: 1.15rem;
+  font-style: italic;
+  font-variation-settings: 'SOFT' 100;
+  text-align: center;
+  color: var(--color-text-muted);
 }
 
 .section-title {
   display: flex;
   flex-direction: column;
-  gap: 2px;
-  font-size: 1.05rem;
+  gap: 4px;
+  font-size: 1.2rem;
 }
 
 .section-hint {
+  font-family: var(--font-body);
   font-size: 0.85rem;
   font-weight: 400;
+  letter-spacing: 0;
+  color: var(--color-text-muted);
 }
 
 /* Send button stays within thumb reach at the bottom of the screen */
@@ -143,21 +205,53 @@ h1 {
   display: flex;
   flex-direction: column;
   gap: 10px;
-  padding: 12px 0 calc(12px + env(safe-area-inset-bottom));
-  background: linear-gradient(to top, var(--color-bg) 75%, transparent);
+  padding: 14px 0 calc(14px + env(safe-area-inset-bottom));
+  background: linear-gradient(to top, var(--color-bg) 70%, transparent);
 }
 
 .thanks {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 8px;
+  justify-content: center;
+  gap: 12px;
+  min-height: 60vh;
   text-align: center;
-  padding: 40px 20px;
 }
 
-.thanks-emoji {
+.thanks h1 {
+  font-size: 2rem;
+}
+
+.thanks-hand {
+  display: grid;
+  place-items: center;
+  width: 112px;
+  height: 112px;
+  margin-bottom: 8px;
+  border-radius: 50%;
+  background: var(--mood-5-soft);
   font-size: 3.5rem;
-  line-height: 1;
+}
+
+.thanks-hand.reveal {
+  animation:
+    reveal 0.55s cubic-bezier(0.2, 0.7, 0.2, 1) both,
+    wave 1.6s ease-in-out 0.5s 2;
+}
+
+@keyframes wave {
+  0%,
+  60%,
+  100% {
+    transform: rotate(0deg);
+  }
+  15%,
+  45% {
+    transform: rotate(14deg);
+  }
+  30% {
+    transform: rotate(-8deg);
+  }
 }
 </style>
