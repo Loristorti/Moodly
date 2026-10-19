@@ -6,6 +6,7 @@ import { PrismaExceptionFilter } from './common/filters/prisma-exception.filter.
 import { HealthModule } from './health/health.module.js';
 import { MoodsModule } from './moods/moods.module.js';
 import { PrismaModule } from './prisma/prisma.module.js';
+import { StatsModule } from './stats/stats.module.js';
 import { UsersModule } from './users/users.module.js';
 
 @Module({
@@ -15,6 +16,7 @@ import { UsersModule } from './users/users.module.js';
     AuthModule,
     UsersModule,
     MoodsModule,
+    StatsModule,
     HealthModule,
   ],
   providers: [{ provide: APP_FILTER, useClass: PrismaExceptionFilter }],
