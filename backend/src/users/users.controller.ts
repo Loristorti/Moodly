@@ -1,6 +1,14 @@
-import { Controller, Get, UnauthorizedException } from '@nestjs/common';
+import {
+  Controller,
+  Delete,
+  Get,
+  HttpCode,
+  HttpStatus,
+  UnauthorizedException,
+} from '@nestjs/common';
 import {
   ApiBearerAuth,
+  ApiNoContentResponse,
   ApiOkResponse,
   ApiTags,
   ApiUnauthorizedResponse,
@@ -26,5 +34,16 @@ export class UsersController {
       throw new UnauthorizedException('Session invalide ou expirée');
     }
     return profile;
+  }
+
+  @Delete('me')
+  @HttpCode(HttpStatus.NO_CONTENT)
+  @ApiNoContentResponse({
+    description:
+      'Compte et historique de saisie supprimés. Les humeurs anonymes sont conservées.',
+  })
+  @ApiUnauthorizedResponse({ description: 'Token absent, invalide ou expiré' })
+  async deleteMe(@CurrentUser() user: AuthUser): Promise<void> {
+    await this.usersService.deleteAccount(user.userId);
   }
 }

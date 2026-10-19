@@ -27,6 +27,14 @@ export class UsersService {
     });
   }
 
+  /**
+   * GDPR: deletes the account and its check-ins (cascade).
+   * Moods are kept: they are anonymous and not personal data.
+   */
+  async deleteAccount(userId: string): Promise<void> {
+    await this.prisma.user.delete({ where: { id: userId } });
+  }
+
   findProfile(userId: string): Promise<UserProfile | null> {
     return this.prisma.user.findUnique({
       where: { id: userId },
