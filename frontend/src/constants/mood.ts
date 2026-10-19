@@ -26,6 +26,15 @@ export const MOOD_TAGS: { value: MoodTag; label: string }[] = [
 
 export const MAX_TAGS = 3
 
+/** CSS colors of a mood level, defined in assets/main.css (--mood-1 ... --mood-5) */
+export function moodColor(score: number): string {
+  return `var(--mood-${score})`
+}
+
+export function moodSoftColor(score: number): string {
+  return `var(--mood-${score}-soft)`
+}
+
 export function tagLabel(tag: MoodTag): string {
   return MOOD_TAGS.find((item) => item.value === tag)?.label ?? tag
 }
