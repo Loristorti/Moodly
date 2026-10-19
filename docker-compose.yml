@@ -1,0 +1,24 @@
+services:
+  db:
+    image: postgres:18-alpine
+    container_name: moodly-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: moodly
+      POSTGRES_PASSWORD: moodly
+      POSTGRES_DB: moodly
+    ports:
+      - "5432:5432"
+    volumes:
+      # Since Postgres 18, the data directory lives under /var/lib/postgresql/<version>/docker
+      - moodly-db-data:/var/lib/postgresql
+      # Init scripts run only on first start (empty volume)
+      - ./docker/init.sql:/docker-entrypoint-initdb.d/init.sql:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U moodly -d moodly"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+volumes:
+  moodly-db-data:
