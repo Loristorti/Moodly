@@ -1,4 +1,25 @@
-import { todayParis } from './date.js';
+import { addDays, isWorkingDay, todayParis, toIsoDate } from './date.js';
+
+describe('date helpers', () => {
+  const monday = new Date('2026-10-19T00:00:00.000Z');
+
+  it('addDays moves forward and backward across months', () => {
+    expect(toIsoDate(addDays(monday, -19))).toBe('2026-09-30');
+    expect(toIsoDate(addDays(monday, 13))).toBe('2026-11-01');
+  });
+
+  it('addDays does not modify the given date', () => {
+    addDays(monday, 5);
+    expect(toIsoDate(monday)).toBe('2026-10-19');
+  });
+
+  it('isWorkingDay is true from Monday to Friday only', () => {
+    const week = [0, 1, 2, 3, 4, 5, 6].map((offset) =>
+      isWorkingDay(addDays(monday, offset)),
+    );
+    expect(week).toEqual([true, true, true, true, true, false, false]);
+  });
+});
 
 describe('todayParis', () => {
   it('returns the Paris day at midnight UTC', () => {
