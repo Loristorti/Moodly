@@ -67,7 +67,8 @@ const data = computed<ChartData<'line', (number | null)[]>>(() => ({
       spanGaps: false,
       borderColor: primary,
       borderWidth: 3,
-      tension: 0.35,
+      // Smooth curve that never goes beyond the real values
+      cubicInterpolationMode: 'monotone',
       fill: 'start',
       backgroundColor: (context) => {
         const { ctx, chartArea } = context.chart
