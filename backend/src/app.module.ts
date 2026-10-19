@@ -1,6 +1,8 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
+import { APP_FILTER } from '@nestjs/core';
 import { AuthModule } from './auth/auth.module.js';
+import { PrismaExceptionFilter } from './common/filters/prisma-exception.filter.js';
 import { HealthModule } from './health/health.module.js';
 import { PrismaModule } from './prisma/prisma.module.js';
 import { UsersModule } from './users/users.module.js';
@@ -13,5 +15,6 @@ import { UsersModule } from './users/users.module.js';
     UsersModule,
     HealthModule,
   ],
+  providers: [{ provide: APP_FILTER, useClass: PrismaExceptionFilter }],
 })
 export class AppModule {}
