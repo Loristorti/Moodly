@@ -9,6 +9,7 @@ import {
 import { ApiTags } from '@nestjs/swagger';
 import { ThrottlerGuard } from '@nestjs/throttler';
 import { AuthService } from './auth.service.js';
+import { Public } from './decorators/public.decorator.js';
 import { LoginDto } from './dto/login.dto.js';
 
 @ApiTags('auth')
@@ -17,6 +18,7 @@ export class AuthController {
   constructor(private readonly authService: AuthService) {}
 
   /** Limited to 5 requests per minute per IP (see ThrottlerModule in AuthModule). */
+  @Public()
   @UseGuards(ThrottlerGuard)
   @HttpCode(HttpStatus.OK)
   @Post('login')
