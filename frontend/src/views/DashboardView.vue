@@ -17,6 +17,7 @@ const error = ref<string | null>(null)
 /** No visible day at all: nothing to draw yet */
 const isEmpty = computed(() => stats.value?.daily.every((day) => day.hidden) ?? true)
 
+/** The average card takes the soft color of its mood level */
 const averageTint = computed(() => {
   const average = stats.value?.summary.average
   return average == null ? 'var(--color-surface)' : moodSoftColor(Math.round(average))
@@ -38,7 +39,7 @@ onMounted(load)
 </script>
 
 <template>
-  <AppHeader />
+  <AppHeader wide />
 
   <main class="page dashboard">
     <p v-if="loading" class="muted center" role="status">Chargement des statistiques…</p>
@@ -48,16 +49,17 @@ onMounted(load)
       <button type="button" class="button button-secondary" @click="load">Réessayer</button>
     </section>
 
-    <template v-else-if="stats">
-      <header class="dashboard-title reveal">
-        <p class="eyebrow">Tableau de bord · {{ stats.period.days }} derniers jours</p>
+    <div v-else-if="stats" class="dashboard-grid">
+      <header class="area-title reveal">
         <h1>{{ stats.team.name }}</h1>
-        <p class="muted">{{ stats.team.employeeCount }} employés</p>
+        <p class="muted">
+          {{ stats.team.employeeCount }} employés · {{ stats.period.days }} derniers jours
+        </p>
       </header>
 
-      <section class="indicators reveal" style="--order: 1" aria-label="Indicateurs clés">
+      <section class="area-kpis indicators reveal" style="--order: 1" aria-label="Indicateurs clés">
         <div class="card indicator" :style="{ background: averageTint }">
-          <p class="indicator-label">Moyenne</p>
+          <p class="indicator-label">Moyenne sur {{ stats.period.days }} jours</p>
           <p class="indicator-value">
             <template v-if="stats.summary.average !== null">
               {{ formatAverage(stats.summary.average) }}<small>/5</small>
@@ -70,17 +72,17 @@ onMounted(load)
         </div>
 
         <div class="card indicator">
-          <p class="indicator-label">Participation</p>
+          <p class="indicator-label">Taux de participation</p>
           <p class="indicator-value">{{ formatPercent(stats.summary.participationRate) }}</p>
         </div>
       </section>
 
-      <section class="card reveal" style="--order: 2">
+      <section class="area-chart card reveal" style="--order: 2">
         <h2>L’humeur, jour par jour</h2>
         <p v-if="isEmpty" class="muted center empty">
           Pas encore assez de réponses pour afficher la courbe.
         </p>
-        <TeamMoodChart v-else class="chart" :daily="stats.daily" />
+        <TeamMoodChart v-else class="chart" :daily="stats.daily" :threshold="stats.threshold" />
         <p class="notice chart-note">
           <span class="emoji" aria-hidden="true">🔒</span>
           <span>
@@ -90,7 +92,7 @@ onMounted(load)
         </p>
       </section>
 
-      <section class="card stack reveal" style="--order: 3">
+      <section class="area-concerns card stack reveal" style="--order: 3">
         <div>
           <h2>Principales préoccupations</h2>
           <p class="muted small">Les thèmes cités quand l’humeur est basse (1 ou 2 sur 5)</p>
@@ -105,8 +107,11 @@ onMounted(load)
         <p v-else class="muted">Aucune préoccupation à signaler sur la période.</p>
       </section>
 
-      <section class="card stack reveal" style="--order: 4">
-        <h2>Thèmes les plus cités</h2>
+      <section class="area-tags card stack reveal" style="--order: 4">
+        <div>
+          <h2>Thèmes les plus cités</h2>
+          <p class="muted small">Toutes humeurs confondues</p>
+        </div>
         <ol v-if="stats.summary.topTags?.length" class="ranking">
           <li v-for="(item, index) in stats.summary.topTags" :key="item.tag">
             <span class="ranking-position">{{ index + 1 }}</span>
@@ -116,21 +121,72 @@ onMounted(load)
         </ol>
         <p v-else class="muted">Pas assez de réponses sur la période.</p>
       </section>
-    </template>
+    </div>
   </main>
 </template>
 
 <style scoped>
-.dashboard {
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
+/* Mobile: one column, in reading order (title, key figures, chart, rankings) */
+.dashboard-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: var(--space-sm);
+}
+
+/* Desktop: chart wide with the key figures beside it, the two rankings side by side */
+@media (min-width: 960px) {
+  .page.dashboard {
+    max-width: var(--page-width-wide);
+    padding: var(--space-lg) var(--space-md) var(--space-xl);
+  }
+
+  .dashboard-grid {
+    grid-template-columns: repeat(12, minmax(0, 1fr));
+    gap: var(--space-md);
+  }
+
+  .area-title {
+    grid-column: 1 / -1;
+  }
+
+  .area-chart {
+    grid-column: 1 / 9;
+    grid-row: 2;
+  }
+
+  .area-kpis {
+    grid-column: 9 / -1;
+    grid-row: 2;
+    grid-template-columns: minmax(0, 1fr);
+    grid-auto-rows: 1fr;
+  }
+
+  .area-concerns {
+    grid-column: 1 / 7;
+  }
+
+  .area-tags {
+    grid-column: 7 / -1;
+  }
+
+  .area-title h1 {
+    font-size: var(--text-3xl);
+  }
+
+  .indicator {
+    justify-content: center;
+    padding: var(--space-md);
+  }
+
+  .indicator-value {
+    font-size: 3.25rem;
+  }
 }
 
 .stack {
   display: flex;
   flex-direction: column;
-  gap: 14px;
+  gap: var(--space-xs);
 }
 
 .center {
@@ -138,23 +194,23 @@ onMounted(load)
 }
 
 .small {
-  margin-top: 4px;
-  font-size: 0.85rem;
+  margin-top: var(--space-3xs);
+  font-size: var(--text-sm);
 }
 
-.dashboard-title {
+.area-title {
   display: flex;
   flex-direction: column;
-  gap: 4px;
-  padding: 4px 4px 0;
+  gap: var(--space-3xs);
+  padding: var(--space-3xs) var(--space-3xs) 0;
 }
 
-.dashboard-title h1 {
-  font-size: 2rem;
+.area-title h1 {
+  font-size: var(--text-2xl);
 }
 
 h2 {
-  font-size: 1.2rem;
+  font-size: var(--text-lg);
 }
 
 .empty {
@@ -162,32 +218,30 @@ h2 {
 }
 
 .chart {
-  margin-top: 12px;
+  margin-top: var(--space-xs);
 }
 
 .chart-note {
-  margin-top: 14px;
+  margin-top: var(--space-xs);
 }
 
 .indicators {
   display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 12px;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--space-xs);
 }
 
 .indicator {
   display: flex;
   flex-direction: column;
   justify-content: space-between;
-  gap: 8px;
+  gap: var(--space-2xs);
   padding: 18px;
 }
 
 .indicator-label {
-  font-size: 0.75rem;
-  font-weight: 700;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
+  font-size: var(--text-sm);
+  font-weight: 600;
   color: var(--color-text-muted);
 }
 
@@ -196,15 +250,16 @@ h2 {
   align-items: baseline;
   gap: 2px;
   font-family: var(--font-display);
-  font-size: 2.4rem;
+  font-size: var(--text-3xl);
   font-weight: 600;
   font-variation-settings: 'SOFT' 100;
+  font-variant-numeric: tabular-nums;
   line-height: 1;
   letter-spacing: -0.02em;
 }
 
 .indicator-value small {
-  font-size: 1rem;
+  font-size: var(--text-md);
   color: var(--color-text-muted);
 }
 
@@ -224,7 +279,7 @@ h2 {
 .ranking li {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: var(--space-xs);
   min-height: var(--tap-size);
   border-top: 1px solid var(--color-border);
 }
@@ -253,11 +308,13 @@ h2 {
 
 .ranking-label {
   flex: 1;
+  min-width: 0;
   font-weight: 550;
 }
 
 .ranking-count {
-  font-size: 0.85rem;
+  flex-shrink: 0;
+  font-size: var(--text-sm);
   font-variant-numeric: tabular-nums;
 }
 </style>

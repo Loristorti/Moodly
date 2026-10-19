@@ -2,6 +2,9 @@
 import { useRouter } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
 
+/** wide: aligns the header with the wide desktop layout of the dashboard */
+defineProps<{ wide?: boolean }>()
+
 const auth = useAuthStore()
 const router = useRouter()
 
@@ -13,7 +16,7 @@ function logout() {
 
 <template>
   <header class="app-header">
-    <div class="app-header-content">
+    <div class="app-header-content" :class="{ wide }">
       <div class="app-header-identity">
         <p class="app-header-brand">Moodly</p>
         <p v-if="auth.user" class="app-header-user muted">
@@ -32,7 +35,7 @@ function logout() {
   position: sticky;
   top: 0;
   z-index: 10;
-  background: rgb(247 242 234 / 85%);
+  background: var(--color-bg-translucent);
   backdrop-filter: blur(10px);
   border-bottom: 1px solid var(--color-border);
 }
@@ -46,6 +49,13 @@ function logout() {
   margin: 0 auto;
   padding: 8px 16px;
   padding-top: calc(8px + env(safe-area-inset-top));
+}
+
+@media (min-width: 960px) {
+  .app-header-content.wide {
+    max-width: var(--page-width-wide);
+    padding-inline: var(--space-md);
+  }
 }
 
 .app-header-identity {
