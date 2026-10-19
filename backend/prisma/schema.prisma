@@ -1,0 +1,66 @@
+generator client {
+  provider            = "prisma-client"
+  output              = "../src/generated/prisma"
+  moduleFormat        = "esm"
+  importFileExtension = "js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum Role {
+  EMPLOYEE
+  MANAGER
+}
+
+enum MoodTag {
+  WORKLOAD // Workload
+  TEAM_SPIRIT // Team atmosphere
+  MANAGEMENT // Management
+  WORK_LIFE_BALANCE // Work-life balance
+  RECOGNITION // Recognition
+  WORK_CONDITIONS // Working conditions / tools
+}
+
+model Team {
+  id        String   @id @default(uuid())
+  name      String   @unique
+  users     User[]
+  moods     Mood[]
+  createdAt DateTime @default(now())
+}
+
+model User {
+  id           String    @id @default(uuid())
+  email        String    @unique
+  passwordHash String
+  firstName    String
+  lastName     String
+  role         Role      @default(EMPLOYEE)
+  teamId       String
+  team         Team      @relation(fields: [teamId], references: [id])
+  checkIns     CheckIn[]
+  createdAt    DateTime  @default(now())
+}
+
+/// ANONYMOUS mood: no link to User, no precise timestamp (day only).
+model Mood {
+  id     String    @id @default(uuid())
+  score  Int // 1 to 5
+  tags   MoodTag[]
+  day    DateTime  @db.Date
+  teamId String
+  team   Team      @relation(fields: [teamId], references: [id])
+
+  @@index([teamId, day])
+}
+
+/// ONLY used to prevent two check-ins on the same day. No link to Mood.
+model CheckIn {
+  userId String
+  user   User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  day    DateTime @db.Date
+
+  @@id([userId, day])
+}

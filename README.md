@@ -45,3 +45,24 @@ La base `moodly_test` est créée par `docker/init.sql`, qui ne s'exécute qu'au
 docker compose down -v
 docker compose up -d
 ```
+
+## Lancer le back
+
+Prérequis : Node.js 22 LTS ou plus récent, et la base de données démarrée (voir ci-dessus).
+
+```bash
+cd backend
+cp .env.example .env        # puis remplacer JWT_SECRET par une longue chaîne aléatoire
+npm install                 # génère aussi le client Prisma
+npx prisma migrate dev      # crée les tables
+npm run start:dev           # http://localhost:3000/api
+```
+
+Vérification : `http://localhost:3000/api/health` doit répondre `{"status":"ok"}`.
+
+| Commande | Rôle |
+|---|---|
+| `npm run build` | compile le projet |
+| `npm run lint` | vérifie le code (oxlint) |
+| `npm test` | tests unitaires (Vitest) |
+| `npm run test:e2e` | tests de bout en bout |
