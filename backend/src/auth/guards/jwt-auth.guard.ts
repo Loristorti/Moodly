@@ -7,6 +7,7 @@ import {
 import { Reflector } from '@nestjs/core';
 import { JwtService } from '@nestjs/jwt';
 import type { Request } from 'express';
+import { PrismaService } from '../../prisma/prisma.service.js';
 import type { AuthUser, JwtPayload } from '../auth-user.js';
 import { IS_PUBLIC_KEY } from '../decorators/public.decorator.js';
 
@@ -16,6 +17,7 @@ export class JwtAuthGuard implements CanActivate {
   constructor(
     private readonly jwtService: JwtService,
     private readonly reflector: Reflector,
+    private readonly prisma: PrismaService,
   ) {}
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
@@ -35,16 +37,27 @@ export class JwtAuthGuard implements CanActivate {
       throw new UnauthorizedException('Authentification requise');
     }
 
+    let payload: JwtPayload;
     try {
-      const payload = await this.jwtService.verifyAsync<JwtPayload>(token);
-      request.user = {
-        userId: payload.sub,
-        role: payload.role,
-        teamId: payload.teamId,
-      };
+      payload = await this.jwtService.verifyAsync<JwtPayload>(token);
     } catch {
       throw new UnauthorizedException('Session invalide ou expirée');
     }
+
+    // A token stays valid until it expires: reject it if the account was deleted since
+    const accountExists = await this.prisma.user.findUnique({
+      where: { id: payload.sub },
+      select: { id: true },
+    });
+    if (!accountExists) {
+      throw new UnauthorizedException('Session invalide ou expirée');
+    }
+
+    request.user = {
+      userId: payload.sub,
+      role: payload.role,
+      teamId: payload.teamId,
+    };
     return true;
   }
 }
