@@ -1,6 +1,5 @@
 // Fonts bundled with the app (no network needed on the phone)
 import '@fontsource-variable/fraunces/soft.css'
-import '@fontsource-variable/fraunces/soft-italic.css'
 import '@fontsource-variable/figtree'
 import './assets/main.css'
 

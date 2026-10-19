@@ -122,7 +122,7 @@ async function submit() {
 }
 
 .login-wordmark {
-  font-size: 3.25rem;
+  font-size: var(--text-display);
   font-weight: 700;
   letter-spacing: -0.03em;
   color: var(--color-primary);
@@ -147,19 +147,19 @@ async function submit() {
 
 .login-tagline {
   font-family: var(--font-display);
-  font-style: italic;
-  font-size: 1.35rem;
+  font-size: var(--text-xl);
+  font-weight: 500;
   font-variation-settings: 'SOFT' 100;
 }
 
 .login-form {
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: var(--space-sm);
 }
 
 .login-footer {
-  font-size: 0.85rem;
+  font-size: var(--text-sm);
   text-align: center;
 }
 </style>

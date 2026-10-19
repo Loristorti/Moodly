@@ -93,7 +93,7 @@ onMounted(loadTodayStatus)
 
       <form v-else class="stack" @submit.prevent="send">
         <header class="mood-title reveal">
-          <p class="eyebrow">{{ today }}</p>
+          <p class="muted mood-date">{{ today }}</p>
           <h1>Comment allez-vous aujourd’hui&nbsp;?</h1>
         </header>
 
@@ -136,7 +136,7 @@ onMounted(loadTodayStatus)
 .mood-screen {
   min-height: 100vh;
   min-height: 100dvh;
-  transition: --tint 0.6s ease;
+  transition: --tint var(--dur-long) var(--ease-out);
 }
 
 /* Soft glow of the chosen mood's color at the top of the screen */
@@ -169,15 +169,19 @@ onMounted(loadTodayStatus)
   padding: 4px 4px 0;
 }
 
+.mood-date::first-letter {
+  text-transform: uppercase;
+}
+
 .mood-title h1 {
-  font-size: 1.9rem;
+  font-size: var(--text-2xl);
 }
 
 .mood-feedback {
   min-height: 1.6em;
   font-family: var(--font-display);
-  font-size: 1.15rem;
-  font-style: italic;
+  font-size: var(--text-lg);
+  font-weight: 500;
   font-variation-settings: 'SOFT' 100;
   text-align: center;
   color: var(--color-text-muted);
@@ -234,10 +238,11 @@ onMounted(loadTodayStatus)
   font-size: 3.5rem;
 }
 
+/* One single wave, then still */
 .thanks-hand.reveal {
   animation:
-    reveal 0.55s cubic-bezier(0.2, 0.7, 0.2, 1) both,
-    wave 1.6s ease-in-out 0.5s 2;
+    reveal var(--dur-long) var(--ease-out) both,
+    wave 1.4s var(--ease-in-out) 0.5s 1;
 }
 
 @keyframes wave {

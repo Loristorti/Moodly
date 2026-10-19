@@ -32,7 +32,7 @@ const score = defineModel<number | null>({ required: true })
 <style scoped>
 .mood-picker {
   display: grid;
-  grid-template-columns: repeat(5, 1fr);
+  grid-template-columns: repeat(5, minmax(0, 1fr));
   gap: 6px;
 }
 
@@ -48,9 +48,9 @@ const score = defineModel<number | null>({ required: true })
   border-radius: 18px;
   cursor: pointer;
   transition:
-    border-color 0.2s,
-    opacity 0.2s,
-    transform 0.2s;
+    border-color var(--dur-short) var(--ease-out),
+    opacity var(--dur-medium) var(--ease-out),
+    transform var(--dur-medium) var(--ease-out);
 }
 
 .mood-option:hover {
@@ -72,11 +72,11 @@ const score = defineModel<number | null>({ required: true })
 .mood-emoji {
   font-size: 2.1rem;
   line-height: 1;
-  transition: transform 0.35s cubic-bezier(0.3, 1.6, 0.5, 1);
+  transition: transform var(--dur-medium) var(--ease-out);
 }
 
 .mood-option.selected .mood-emoji {
-  transform: scale(1.18);
+  transform: scale(1.15);
 }
 
 .mood-label {
@@ -84,10 +84,23 @@ const score = defineModel<number | null>({ required: true })
   font-weight: 600;
   line-height: 1.15;
   text-align: center;
+  white-space: nowrap;
   color: var(--color-text-muted);
 }
 
 .mood-option.selected .mood-label {
   color: var(--color-text);
+}
+
+/* Small phones: labels would not fit on one line. The chosen label is
+   written under the picker, and each button keeps its aria-label. */
+@media (max-width: 400px) {
+  .mood-option {
+    min-height: 72px;
+  }
+
+  .mood-label {
+    display: none;
+  }
 }
 </style>

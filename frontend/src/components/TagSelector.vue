@@ -64,9 +64,9 @@ function toggle(tag: MoodTag) {
   font-size: 0.95rem;
   cursor: pointer;
   transition:
-    background-color 0.2s,
-    border-color 0.2s,
-    color 0.2s;
+    background-color var(--dur-short) var(--ease-out),
+    border-color var(--dur-short) var(--ease-out),
+    color var(--dur-short) var(--ease-out);
 }
 
 .tag:hover {
@@ -81,7 +81,7 @@ function toggle(tag: MoodTag) {
 .tag.selected {
   background: var(--color-primary);
   border-color: var(--color-primary);
-  color: #ffffff;
+  color: var(--color-on-primary);
   font-weight: 600;
 }
 
