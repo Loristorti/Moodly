@@ -20,7 +20,8 @@ ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, Tooltip)
 
 const BUBBLE = ['#ff6b6b', '#ffa94d', '#ffd43b', '#69db7c', '#38d9a9']
 const SHADE = ['#e03131', '#f76707', '#f59f00', '#37b24d', '#0ca678']
-const props = defineProps<{ stats: TeamStats }>()
+const props = defineProps<{ stats: TeamStats; only?: ('login' | 'mood' | 'dashboard')[] }>()
+const show = (screen: 'login' | 'mood' | 'dashboard') => !props.only || props.only.includes(screen)
 const score = ref<number | null>(5)
 const tags = ref<MoodTag[]>(['TEAM_SPIRIT'])
 const toggle = (tag: MoodTag) =>
@@ -77,7 +78,7 @@ const chartOptions = {
 
 <template>
   <div class="row">
-    <ScreenColumn label="Connexion">
+    <ScreenColumn v-if="show('login')" label="Connexion">
       <div class="c-screen c-login">
         <div class="c-faces">
           <span
@@ -96,7 +97,7 @@ const chartOptions = {
       </div>
     </ScreenColumn>
 
-    <ScreenColumn label="Saisie de l'humeur">
+    <ScreenColumn v-if="show('mood')" label="Saisie de l'humeur">
       <div class="c-screen">
         <p class="c-sub">Lundi 20 octobre</p>
         <h1>Ça va comment aujourd'hui ?</h1>
@@ -128,7 +129,7 @@ const chartOptions = {
       </div>
     </ScreenColumn>
 
-    <ScreenColumn label="Dashboard manager">
+    <ScreenColumn v-if="show('dashboard')" label="Dashboard manager">
       <div class="c-screen">
         <h1>{{ stats.team.name }}</h1>
         <div class="c-stats">

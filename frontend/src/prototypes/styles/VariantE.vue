@@ -28,7 +28,8 @@ const LAYOUT: [number, number][] = [
   [2, 3],
   [1, 3],
 ]
-const props = defineProps<{ stats: TeamStats }>()
+const props = defineProps<{ stats: TeamStats; only?: ('login' | 'mood' | 'dashboard')[] }>()
+const show = (screen: 'login' | 'mood' | 'dashboard') => !props.only || props.only.includes(screen)
 const score = ref<number | null>(4)
 const tags = ref<MoodTag[]>(['RECOGNITION'])
 const toggle = (tag: MoodTag) =>
@@ -75,7 +76,7 @@ const chartOptions = {
 
 <template>
   <div class="row">
-    <ScreenColumn label="Connexion">
+    <ScreenColumn v-if="show('login')" label="Connexion">
       <div class="e-screen e-grid e-login">
         <div class="e-tile e-span6 e-brand">
           <span>Moodly</span><small>Votre humeur, en 10 secondes</small>
@@ -90,7 +91,7 @@ const chartOptions = {
       </div>
     </ScreenColumn>
 
-    <ScreenColumn label="Saisie de l'humeur">
+    <ScreenColumn v-if="show('mood')" label="Saisie de l'humeur">
       <div class="e-screen e-grid">
         <div class="e-span6 e-head">
           <small>Lundi 20 octobre</small>
@@ -124,7 +125,7 @@ const chartOptions = {
       </div>
     </ScreenColumn>
 
-    <ScreenColumn label="Dashboard manager">
+    <ScreenColumn v-if="show('dashboard')" label="Dashboard manager">
       <div class="e-screen e-grid">
         <div class="e-span6 e-head">
           <small>30 derniers jours</small>

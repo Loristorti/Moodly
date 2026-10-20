@@ -11,6 +11,8 @@ import VariantB from './VariantB.vue'
 import VariantC from './VariantC.vue'
 import VariantD from './VariantD.vue'
 import VariantE from './VariantE.vue'
+import VariantF from './VariantF.vue'
+import VariantG from './VariantG.vue'
 
 const variants: { key: string; name: string; pitch: string; component: Component }[] = [
   {
@@ -46,6 +48,20 @@ const variants: { key: string; name: string; pitch: string; component: Component
     name: 'Bento',
     pitch: 'Tout en tuiles arrondies de tailles différentes. Moderne, façon widgets iPhone.',
     component: VariantE,
+  },
+  {
+    key: 'F',
+    name: 'Bento ludique (C + E)',
+    pitch:
+      'La mise en page en tuiles du E, avec les couleurs, la police ronde et les boutons épais du C, sur les 3 écrans.',
+    component: VariantF,
+  },
+  {
+    key: 'G',
+    name: 'Ludique + bento (C pour les employés, E pour le manager)',
+    pitch:
+      'Connexion et saisie ludiques du C pour le quotidien des employés, dashboard bento plus posé du E pour le manager.',
+    component: VariantG,
   },
 ]
 
