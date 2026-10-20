@@ -1,12 +1,15 @@
 <script setup lang="ts">
-// PROTOTYPE: one screen shown at phone width, so the 3 screens sit side by side
-defineProps<{ label: string }>()
+// PROTOTYPE: one screen at a fixed size (phone by default), so screens sit side by side
+withDefaults(defineProps<{ label: string; width?: number; height?: number }>(), {
+  width: 390,
+  height: 780,
+})
 </script>
 
 <template>
-  <section class="column">
+  <section class="column" :style="{ flexBasis: `${width}px`, width: `${width}px` }">
     <p class="column-label">{{ label }}</p>
-    <div class="column-screen">
+    <div class="column-screen" :style="{ height: `${height}px` }">
       <slot />
     </div>
   </section>
@@ -14,7 +17,8 @@ defineProps<{ label: string }>()
 
 <style scoped>
 .column {
-  flex: 0 0 390px;
+  flex-grow: 0;
+  flex-shrink: 0;
   max-width: 100%;
 }
 
@@ -28,7 +32,6 @@ defineProps<{ label: string }>()
 
 .column-screen {
   position: relative;
-  height: 780px;
   overflow: hidden auto;
   border-radius: 18px;
   box-shadow:

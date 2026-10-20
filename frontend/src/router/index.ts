@@ -45,6 +45,12 @@ const router = createRouter({
             component: () => import('@/prototypes/styles/StylesPrototype.vue'),
             meta: { prototype: true },
           },
+          {
+            path: '/prototype/login',
+            name: 'prototype-login',
+            component: () => import('@/prototypes/styles/LoginPrototype.vue'),
+            meta: { prototype: true },
+          },
         ]
       : []),
     { path: '/:pathMatch(.*)*', redirect: '/login' },
