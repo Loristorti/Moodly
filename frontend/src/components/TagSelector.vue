@@ -34,10 +34,14 @@ function toggle(tag: MoodTag) {
         :aria-pressed="tags.includes(tag.value)"
         @click="toggle(tag.value)"
       >
+        <span class="tag-check" aria-hidden="true">✓</span>
         {{ tag.label }}
       </button>
     </div>
-    <p class="tag-limit" aria-live="polite">{{ limitMessage }}</p>
+    <p class="tag-footer">
+      <span class="tag-limit" aria-live="polite">{{ limitMessage }}</span>
+      <span class="tag-count muted">{{ tags.length }} / {{ MAX_TAGS }}</span>
+    </p>
   </div>
 </template>
 
@@ -49,32 +53,57 @@ function toggle(tag: MoodTag) {
 }
 
 .tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
   min-height: var(--tap-size);
   padding: 0 16px;
-  background: var(--color-surface);
+  background: var(--color-bg);
   border: 1px solid var(--color-border);
   border-radius: 999px;
+  font-size: 0.95rem;
   cursor: pointer;
   transition:
-    border-color 0.15s,
-    background-color 0.15s;
+    background-color var(--dur-short) var(--ease-out),
+    border-color var(--dur-short) var(--ease-out),
+    color var(--dur-short) var(--ease-out);
 }
 
 .tag:hover {
   border-color: var(--color-primary);
 }
 
+.tag-check {
+  display: none;
+  font-weight: 700;
+}
+
 .tag.selected {
   background: var(--color-primary);
   border-color: var(--color-primary);
-  color: #ffffff;
+  color: var(--color-on-primary);
   font-weight: 600;
 }
 
-.tag-limit {
+.tag.selected .tag-check {
+  display: inline;
+}
+
+.tag-footer {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
   min-height: 1.5em;
-  margin-top: 8px;
-  font-size: 0.875rem;
+  margin-top: 10px;
+  font-size: 0.85rem;
+}
+
+.tag-limit {
   color: var(--color-danger);
+}
+
+.tag-count {
+  margin-left: auto;
+  font-variant-numeric: tabular-nums;
 }
 </style>

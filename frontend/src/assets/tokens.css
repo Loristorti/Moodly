@@ -1,0 +1,90 @@
+/*
+ * Design tokens of Moodly: the only place where raw values live.
+ * Components and pages reference them by name (var(--color-primary), var(--space-md)...).
+ * Colors stay in hex: the chart draws on a canvas, and hex works on every Android WebView.
+ */
+
+:root {
+  /* Surfaces */
+  --color-bg: #f7f2ea;
+  --color-bg-translucent: #f7f2ead9;
+  --color-surface: #fffdf9;
+  --color-surface-translucent: #fffdf9b3;
+  --color-border: #e4dacb;
+
+  /* Ink */
+  --color-text: #1e3a32;
+  --color-text-muted: #55655d;
+  --color-on-primary: #ffffff;
+
+  /* Brand */
+  --color-primary: #2c5a4b;
+  --color-primary-hover: #1f4438;
+  --color-primary-soft: #e3ebe2;
+
+  /* Feedback */
+  --color-danger: #a8492f;
+  --color-danger-soft: #f8e4dc;
+  --color-focus: #d6952a;
+
+  /* One color per mood level: a diverging scale, clay (1) -> sand neutral (3) -> green (5) */
+  --mood-1: #d9826a;
+  --mood-2: #e0a95e;
+  --mood-3: #b9ad97;
+  --mood-4: #8db58a;
+  --mood-5: #57a385;
+  --mood-1-soft: #f7e1d8;
+  --mood-2-soft: #f8ecd6;
+  --mood-3-soft: #efeae0;
+  --mood-4-soft: #e4efdf;
+  --mood-5-soft: #dbefe5;
+
+  /* Background glows and chart fill */
+  --color-glow-sage: #8db58a38;
+  --color-glow-honey: #e0a95e29;
+  --color-chart-fill: #8db58a59;
+  --color-chart-fill-end: #8db58a00;
+
+  /* Shadows */
+  --shadow: 0 1px 2px #46321408, 0 10px 30px -12px #46321424;
+  --shadow-button: inset 0 1px 0 #ffffff24, 0 8px 20px -10px #1f4438b3;
+
+  /* Spacing (4 pt scale) */
+  --space-3xs: 4px;
+  --space-2xs: 8px;
+  --space-xs: 12px;
+  --space-sm: 16px;
+  --space-md: 24px;
+  --space-lg: 32px;
+  --space-xl: 48px;
+
+  /* Type scale */
+  --text-xs: 0.75rem;
+  --text-sm: 0.875rem;
+  --text-md: 1rem;
+  --text-lg: 1.2rem;
+  --text-xl: 1.5rem;
+  --text-2xl: 2rem;
+  --text-3xl: 2.5rem;
+  --text-display: 3.25rem;
+
+  /* Fonts */
+  --font-display: 'Fraunces Variable', Georgia, 'Times New Roman', serif;
+  --font-body: 'Figtree Variable', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --font-emoji: 'Apple Color Emoji', 'Segoe UI Emoji', 'Noto Color Emoji', sans-serif;
+
+  /* Shapes */
+  --radius: 22px;
+  --radius-small: 14px;
+  --radius-pill: 999px;
+  --tap-size: 48px;
+  --page-width: 480px;
+  --page-width-wide: 1120px;
+
+  /* Motion: no bounce, no overshoot on UI state */
+  --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-in-out: cubic-bezier(0.65, 0, 0.35, 1);
+  --dur-short: 180ms;
+  --dur-medium: 320ms;
+  --dur-long: 600ms;
+}

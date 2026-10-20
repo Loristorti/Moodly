@@ -1,27 +1,17 @@
-/* Global styles: soft and calm palette, mobile first, 48px minimum touch targets. */
+/*
+ * Moodly visual identity: a calm "logbook" feel.
+ * Warm paper background, forest-green ink, one soft color per mood level.
+ * Mobile first, 48px minimum touch targets, readable contrasts.
+ * Every value comes from tokens.css.
+ */
 
-:root {
-  --color-bg: #f3f6f5;
-  --color-surface: #ffffff;
-  --color-border: #d6e0dd;
-  --color-text: #1f2d33;
-  --color-text-muted: #55666d;
-  --color-primary: #2f6f6a;
-  --color-primary-hover: #245853;
-  --color-primary-soft: #e2eeeb;
-  --color-danger: #a3402f;
-  --color-danger-soft: #fbecea;
-  --color-focus: #d99a2b;
+@import './tokens.css';
 
-  --radius: 16px;
-  --radius-small: 10px;
-  --shadow: 0 1px 2px rgb(31 45 51 / 6%), 0 6px 20px rgb(31 45 51 / 6%);
-  --tap-size: 48px;
-  --page-width: 480px;
-
-  --font:
-    system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif,
-    'Apple Color Emoji', 'Segoe UI Emoji';
+/* Animatable color used by the mood screen to tint the page */
+@property --tint {
+  syntax: '<color>';
+  inherits: true;
+  initial-value: transparent;
 }
 
 *,
@@ -30,25 +20,52 @@
   box-sizing: border-box;
 }
 
+html,
+body {
+  overflow-x: clip;
+}
+
 html {
   -webkit-text-size-adjust: 100%;
+  -webkit-tap-highlight-color: transparent;
 }
 
 body {
   margin: 0;
   min-height: 100vh;
-  background: var(--color-bg);
+  background-color: var(--color-bg);
+  /* Light paper grain */
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 0.35 0 0 0 0 0.27 0 0 0 0 0.15 0 0 0 0.06 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
   color: var(--color-text);
-  font-family: var(--font);
-  font-size: 1rem;
+  font-family: var(--font-body);
+  font-size: var(--text-md);
   line-height: 1.5;
+}
+
+/* Two soft organic shapes in the background, behind everything */
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  background:
+    radial-gradient(38rem 26rem at -10% -8%, var(--color-glow-sage), transparent 70%),
+    radial-gradient(30rem 22rem at 115% 12%, var(--color-glow-honey), transparent 70%);
 }
 
 h1,
 h2,
 h3 {
+  min-width: 0;
   margin: 0;
-  line-height: 1.25;
+  font-family: var(--font-display);
+  font-style: normal;
+  font-weight: 600;
+  font-variation-settings: 'SOFT' 100;
+  line-height: 1.15;
+  letter-spacing: -0.01em;
+  overflow-wrap: anywhere;
 }
 
 p {
@@ -61,9 +78,15 @@ input {
   color: inherit;
 }
 
+/* Shown instantly, never animated */
 :focus-visible {
   outline: 3px solid var(--color-focus);
-  outline-offset: 2px;
+  outline-offset: 3px;
+}
+
+.emoji {
+  font-family: var(--font-emoji);
+  font-style: normal;
 }
 
 /* Layout */
@@ -72,7 +95,7 @@ input {
   width: 100%;
   max-width: var(--page-width);
   margin: 0 auto;
-  padding: 24px 16px 40px;
+  padding: var(--space-md) var(--space-sm) var(--space-xl);
 }
 
 .card {
@@ -80,7 +103,7 @@ input {
   border: 1px solid var(--color-border);
   border-radius: var(--radius);
   box-shadow: var(--shadow);
-  padding: 24px 20px;
+  padding: var(--space-md) 20px;
 }
 
 .muted {
@@ -93,22 +116,30 @@ input {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: 8px;
+  gap: var(--space-2xs);
   min-height: var(--tap-size);
-  padding: 0 20px;
+  padding: 0 22px;
   border: 1px solid transparent;
-  border-radius: var(--radius-small);
-  font-weight: 600;
+  border-radius: var(--radius-pill);
+  font-weight: 650;
+  white-space: nowrap;
   cursor: pointer;
   transition:
-    background-color 0.15s,
-    border-color 0.15s;
+    background-color var(--dur-short) var(--ease-out),
+    border-color var(--dur-short) var(--ease-out),
+    transform var(--dur-short) var(--ease-out);
+}
+
+.button:active:not(:disabled) {
+  transform: scale(0.98);
 }
 
 .button-primary {
   width: 100%;
+  min-height: 54px;
   background: var(--color-primary);
-  color: #ffffff;
+  color: var(--color-on-primary);
+  box-shadow: var(--shadow-button);
 }
 
 .button-primary:hover:not(:disabled) {
@@ -116,18 +147,20 @@ input {
 }
 
 .button-secondary {
-  background: var(--color-surface);
+  background: transparent;
   border-color: var(--color-border);
   color: var(--color-text);
 }
 
 .button-secondary:hover:not(:disabled) {
   background: var(--color-primary-soft);
+  border-color: var(--color-primary-soft);
 }
 
 .button:disabled {
-  opacity: 0.6;
+  opacity: 0.45;
   cursor: not-allowed;
+  box-shadow: none;
 }
 
 /* Forms */
@@ -139,42 +172,86 @@ input {
 }
 
 .field label {
+  font-size: 0.9rem;
   font-weight: 600;
 }
 
 .input {
-  min-height: var(--tap-size);
-  padding: 0 14px;
-  background: var(--color-surface);
+  min-height: 52px;
+  padding: 0 var(--space-sm);
+  background: var(--color-bg);
   border: 1px solid var(--color-border);
   border-radius: var(--radius-small);
+  transition:
+    border-color var(--dur-short) var(--ease-out),
+    background-color var(--dur-short) var(--ease-out);
 }
 
 .input:focus-visible {
+  outline-offset: 0;
   border-color: var(--color-primary);
+  background: var(--color-surface);
 }
 
 /* Messages */
 
 .alert {
-  padding: 12px 14px;
+  padding: var(--space-xs) var(--space-sm);
   border-radius: var(--radius-small);
   background: var(--color-danger-soft);
   color: var(--color-danger);
-  font-weight: 500;
+  font-weight: 550;
 }
 
 .notice {
-  padding: 12px 14px;
+  display: flex;
+  gap: 10px;
+  align-items: flex-start;
+  padding: var(--space-xs) var(--space-sm);
   border-radius: var(--radius-small);
-  background: var(--color-primary-soft);
-  color: var(--color-text);
-  font-size: 0.9rem;
+  background: var(--color-surface-translucent);
+  border: 1px solid var(--color-border);
+  color: var(--color-text-muted);
+  font-size: var(--text-sm);
 }
 
+/* Entrance animation: add .reveal and style="--order: n" to stagger elements */
+
+.reveal {
+  animation: reveal var(--dur-long) var(--ease-out) both;
+  animation-delay: calc(var(--order, 0) * 70ms);
+}
+
+@keyframes reveal {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@keyframes fade {
+  from {
+    opacity: 0;
+  }
+}
+
+/* Reduced motion: no movement, only a short fade */
 @media (prefers-reduced-motion: reduce) {
-  * {
-    transition: none !important;
-    animation: none !important;
+  *,
+  *::before,
+  *::after {
+    transition-duration: 1ms !important;
+  }
+
+  .reveal {
+    animation: fade 150ms linear both;
+  }
+
+  .thanks-hand.reveal {
+    animation: fade 150ms linear both !important;
   }
 }
