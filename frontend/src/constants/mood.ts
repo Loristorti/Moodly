@@ -22,6 +22,10 @@ export const MOOD_TAGS: { value: MoodTag; label: string }[] = [
   { value: 'WORK_LIFE_BALANCE', label: 'Équilibre vie pro / perso' },
   { value: 'RECOGNITION', label: 'Reconnaissance' },
   { value: 'WORK_CONDITIONS', label: 'Conditions de travail' },
+  { value: 'ORGANIZATION', label: 'Organisation du travail' },
+  { value: 'COMMUNICATION', label: 'Communication' },
+  { value: 'AUTONOMY', label: 'Autonomie' },
+  { value: 'MEANING', label: 'Sens du travail' },
 ]
 
 export const MAX_TAGS = 3

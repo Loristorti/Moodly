@@ -9,6 +9,10 @@ export type MoodTag =
   | 'WORK_LIFE_BALANCE'
   | 'RECOGNITION'
   | 'WORK_CONDITIONS'
+  | 'MEANING'
+  | 'AUTONOMY'
+  | 'COMMUNICATION'
+  | 'ORGANIZATION'
 
 export interface Team {
   id: string
