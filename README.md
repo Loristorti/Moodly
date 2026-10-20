@@ -55,6 +55,7 @@ cd backend
 cp .env.example .env        # puis remplacer JWT_SECRET par une longue chaîne aléatoire
 npm install                 # génère aussi le client Prisma
 npx prisma migrate dev      # crée les tables
+npm run seed                # remplit la base avec les données de démo
 npm run start:dev           # http://localhost:3000/api
 ```
 
@@ -77,6 +78,24 @@ npm run test:e2e
 | `npm run lint` | vérifie le code (oxlint) |
 | `npm test` | tests unitaires (Vitest) |
 | `npm run test:e2e` | tests de bout en bout |
+| `npm run seed` | vide puis remplit la base de démo |
+
+## Comptes de test
+
+Créés par `npm run seed`. Mot de passe commun : **`Moodly2026!`**
+
+| Email | Rôle | Équipe |
+|---|---|---|
+| `manager.produit@moodly.dev` | Manager | Équipe Produit |
+| `manager.support@moodly.dev` | Manager | Équipe Support |
+| `alice@moodly.dev` | Employée | Équipe Produit (n'a pas encore répondu aujourd'hui : idéale pour la démo) |
+| `thomas`, `camille`, `hugo`, `lea`, `julien` `@moodly.dev` | Employés | Équipe Produit |
+| `sarah`, `lucas`, `emma`, `nicolas`, `chloe`, `maxime` `@moodly.dev` | Employés | Équipe Support |
+
+Les données couvrent les 30 derniers jours ouvrés (aujourd'hui exclu) :
+
+- une **semaine « rush »** en milieu de période, avec une baisse nette du moral et le tag « Charge de travail » très présent, puis une remontée ;
+- deux jours avec moins de 3 réponses pour l'Équipe Support, **masqués** dans le graphe pour protéger l'anonymat.
 
 ## Lancer le front
 
