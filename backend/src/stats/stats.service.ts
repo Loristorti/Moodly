@@ -14,25 +14,15 @@ import {
   TeamStatsDto,
 } from './dto/team-stats.dto.js';
 
+/** Average and number of answers of one day, computed by the database. */
+interface DayGroup {
+  day: Date;
+  average: number;
+  answers: number;
+}
+
 const round = (value: number, decimals: number) =>
   Math.round(value * 10 ** decimals) / 10 ** decimals;
-
-const mean = (values: number[]) =>
-  values.reduce((sum, value) => sum + value, 0) / values.length;
-
-/** The 3 most cited tags, most frequent first. */
-function topTags(moods: { tags: MoodTag[] }[]): TagCountDto[] {
-  const counts = new Map<MoodTag, number>();
-  for (const mood of moods) {
-    for (const tag of mood.tags) {
-      counts.set(tag, (counts.get(tag) ?? 0) + 1);
-    }
-  }
-  return [...counts.entries()]
-    .map(([tag, count]) => ({ tag, count }))
-    .sort((a, b) => b.count - a.count || a.tag.localeCompare(b.tag))
-    .slice(0, 3);
-}
 
 @Injectable()
 export class StatsService {
@@ -52,67 +42,119 @@ export class StatsService {
   async getTeamStats(teamId: string, days: number): Promise<TeamStatsDto> {
     const to = todayParis();
     const from = addDays(to, -(days - 1));
+    const period = { teamId, day: { gte: from, lte: to } };
 
-    const [team, employeeCount, moods] = await Promise.all([
+    const [team, employeeCount, groups, tagRows] = await Promise.all([
       this.prisma.team.findUniqueOrThrow({
         where: { id: teamId },
         select: { id: true, name: true },
       }),
       this.prisma.user.count({ where: { teamId, role: Role.EMPLOYEE } }),
+      this.prisma.mood.groupBy({
+        by: ['day'],
+        where: period,
+        _avg: { score: true },
+        _count: { _all: true },
+      }),
+      // Tags are lists: Prisma cannot group them, so they are counted here
       this.prisma.mood.findMany({
-        where: { teamId, day: { gte: from, lte: to } },
-        select: { score: true, tags: true, day: true },
+        where: period,
+        select: { score: true, tags: true },
       }),
     ]);
 
-    const scoresByDay = new Map<string, number[]>();
-    for (const mood of moods) {
-      const date = toIsoDate(mood.day);
-      scoresByDay.set(date, [...(scoresByDay.get(date) ?? []), mood.score]);
-    }
-
-    // One entry per day of the period, so the front can draw a continuous axis
-    const daily: DailyStatDto[] = [];
-    const visibleScores: number[] = [];
-    let workingDays = 0;
-    for (let offset = 0; offset < days; offset++) {
-      const day = addDays(from, offset);
-      const scores = scoresByDay.get(toIsoDate(day)) ?? [];
-      const hidden = scores.length < this.threshold;
-
-      if (isWorkingDay(day)) workingDays++;
-      if (!hidden) visibleScores.push(...scores);
-
-      daily.push({
-        date: toIsoDate(day),
-        average: hidden ? null : round(mean(scores), 1),
-        responses: hidden ? null : scores.length,
-        hidden,
-      });
-    }
-
-    const enoughAnswers = moods.length >= this.threshold;
-    const expectedAnswers = employeeCount * workingDays;
+    const dayGroups: DayGroup[] = groups.map((group) => ({
+      day: group.day,
+      average: group._avg.score ?? 0,
+      answers: group._count._all,
+    }));
+    const totalAnswers = dayGroups.reduce((sum, g) => sum + g.answers, 0);
+    const enoughAnswers = totalAnswers >= this.threshold;
 
     return {
       team: { ...team, employeeCount },
       period: { from: toIsoDate(from), to: toIsoDate(to), days },
       threshold: this.threshold,
-      daily,
+      daily: this.buildDaily(from, days, dayGroups),
       summary: {
-        // Hidden days are left out: otherwise their average could be deduced
-        // from this global average and the visible daily values
-        average:
-          enoughAnswers && visibleScores.length > 0
-            ? round(mean(visibleScores), 1)
-            : null,
-        participationRate:
-          expectedAnswers > 0 ? round(moods.length / expectedAnswers, 2) : 0,
-        topTags: enoughAnswers ? topTags(moods) : null,
+        average: enoughAnswers ? this.visibleAverage(dayGroups) : null,
+        participationRate: this.participationRate(
+          totalAnswers,
+          employeeCount,
+          from,
+          days,
+        ),
+        topTags: enoughAnswers ? this.topTags(tagRows) : null,
         topConcerns: enoughAnswers
-          ? topTags(moods.filter((mood) => mood.score <= 2))
+          ? this.topTags(tagRows.filter((row) => row.score <= 2))
           : null,
       },
     };
+  }
+
+  private isHidden(answers: number): boolean {
+    return answers < this.threshold;
+  }
+
+  /** One entry per day of the period, so the front can draw a continuous axis. */
+  private buildDaily(
+    from: Date,
+    days: number,
+    dayGroups: DayGroup[],
+  ): DailyStatDto[] {
+    const byDate = new Map(dayGroups.map((g) => [toIsoDate(g.day), g]));
+
+    return Array.from({ length: days }, (_, offset) => {
+      const date = toIsoDate(addDays(from, offset));
+      const group = byDate.get(date);
+      const hidden = !group || this.isHidden(group.answers);
+
+      return {
+        date,
+        average: hidden ? null : round(group.average, 1),
+        responses: hidden ? null : group.answers,
+        hidden,
+      };
+    });
+  }
+
+  /**
+   * Average of the visible days only: if hidden days were included, their
+   * average could be deduced from this value and the visible daily values.
+   */
+  private visibleAverage(dayGroups: DayGroup[]): number | null {
+    const visible = dayGroups.filter((g) => !this.isHidden(g.answers));
+    const answers = visible.reduce((sum, g) => sum + g.answers, 0);
+    if (answers === 0) {
+      return null;
+    }
+    const scoreSum = visible.reduce((sum, g) => sum + g.average * g.answers, 0);
+    return round(scoreSum / answers, 1);
+  }
+
+  /** Answers ÷ (employees × working days of the period, Monday to Friday). */
+  private participationRate(
+    totalAnswers: number,
+    employeeCount: number,
+    from: Date,
+    days: number,
+  ): number {
+    const workingDays = Array.from({ length: days }, (_, offset) =>
+      addDays(from, offset),
+    ).filter(isWorkingDay).length;
+    const expectedAnswers = employeeCount * workingDays;
+    return expectedAnswers > 0 ? round(totalAnswers / expectedAnswers, 2) : 0;
+  }
+
+  /** The 3 most cited tags, most frequent first. */
+  private topTags(rows: { tags: MoodTag[] }[]): TagCountDto[] {
+    const counts = new Map<MoodTag, number>();
+    for (const tag of rows.flatMap((row) => row.tags)) {
+      counts.set(tag, (counts.get(tag) ?? 0) + 1);
+    }
+    return [...counts.entries()]
+      .map(([tag, count]) => ({ tag, count }))
+      .sort((a, b) => b.count - a.count || a.tag.localeCompare(b.tag))
+      .slice(0, 3);
   }
 }
