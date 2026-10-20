@@ -57,11 +57,12 @@ function toggle(tag: MoodTag) {
   align-items: center;
   gap: 6px;
   min-height: var(--tap-size);
-  padding: 0 16px;
-  background: var(--color-bg);
-  border: 1px solid var(--color-border);
-  border-radius: 999px;
-  font-size: 0.95rem;
+  padding: 0 14px;
+  background: var(--color-surface);
+  border: var(--border-width) solid var(--color-border-strong);
+  border-radius: var(--radius-small);
+  font-size: 0.9rem;
+  font-weight: 700;
   cursor: pointer;
   transition:
     background-color var(--dur-short) var(--ease-out),
@@ -79,10 +80,10 @@ function toggle(tag: MoodTag) {
 }
 
 .tag.selected {
-  background: var(--color-primary);
+  background: var(--color-primary-soft);
   border-color: var(--color-primary);
-  color: var(--color-on-primary);
-  font-weight: 600;
+  color: var(--color-primary-edge);
+  font-weight: 800;
 }
 
 .tag.selected .tag-check {
@@ -95,11 +96,12 @@ function toggle(tag: MoodTag) {
   gap: 12px;
   min-height: 1.5em;
   margin-top: 10px;
-  font-size: 0.85rem;
+  font-size: var(--text-sm);
 }
 
 .tag-limit {
   color: var(--color-danger);
+  font-weight: 700;
 }
 
 .tag-count {
