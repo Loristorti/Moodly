@@ -1,116 +1,143 @@
 # Moodly
 
-Application mobile de suivi du moral des salariés, dans une démarche RSE.
+**Moodly** est une application mobile de suivi du moral des salariés, pensée dans une démarche RSE.
 
-- Les **employés** renseignent leur humeur du jour en quelques secondes.
-- Les **managers** consultent l'humeur moyenne de leur équipe sur les 30 derniers jours.
-- Les réponses sont **anonymes par conception** : un manager ne voit que des moyennes d'équipe.
+- Chaque **employé** renseigne son humeur du jour en moins de 10 secondes : une note de 1 à 5 et, s'il le souhaite, jusqu'à 3 thèmes qui l'expliquent.
+- Chaque **manager** consulte l'humeur moyenne de son équipe sur les 30 derniers jours, pour repérer une tendance et en parler collectivement.
+- Les réponses sont **anonymes par conception** : un manager ne voit jamais qui a répondu quoi, uniquement des moyennes d'équipe, et les jours avec trop peu de réponses sont masqués.
 
-> Projet en cours de développement. Ce README sera complété au fil des étapes.
+Projet réalisé à Epitech Digital School (3e année) par Loris, Daysam et Dine.
 
-## Stack
+---
 
-| Couche | Technologie |
+## Sommaire
+
+1. [Fonctionnalités](#fonctionnalités)
+2. [Architecture](#architecture)
+3. [Installation rapide](#installation-rapide)
+4. [Comptes de test](#comptes-de-test)
+5. [API](#api)
+6. [Tests](#tests)
+7. [Lancer sur téléphone (Android)](#lancer-sur-téléphone-android)
+8. [Scénario de démo](#scénario-de-démo)
+9. [Anonymat et RGPD](#anonymat-et-rgpd)
+10. [Documentation](#documentation)
+
+---
+
+## Fonctionnalités
+
+| Écran | Pour qui | Ce qu'on y fait |
+|---|---|---|
+| Connexion | tout le monde | se connecter avec son email professionnel ; redirection selon le rôle |
+| Humeur du jour | employé | choisir une humeur (😞 → 😄), jusqu'à 3 thèmes, envoyer ; une seule réponse par jour |
+| Tableau de bord | manager | courbe de l'humeur moyenne sur 30 jours, moyenne, taux de participation, principales préoccupations, thèmes les plus cités |
+
+Hors périmètre du MVP, volontairement : historique personnel, inscription libre (les comptes sont fournis par l'employeur), commentaire libre (risque de ré-identification), notifications.
+
+## Architecture
+
+```mermaid
+flowchart LR
+    phone["📱 App Android<br/>(Vue 3 + Capacitor)"] -- "HTTP + JWT<br/>réseau local" --> api["API NestJS<br/>:3000/api"]
+    browser["💻 Navigateur<br/>(Vue 3, Vite)"] -- "HTTP + JWT" --> api
+    api -- "Prisma" --> db[("PostgreSQL<br/>(Docker)")]
+```
+
+| Couche | Technologies |
 |---|---|
-| Front | Vue 3, TypeScript, Vite, Pinia, Chart.js |
-| Mobile | Capacitor (Android) |
-| Back | NestJS, TypeScript, Prisma |
-| Base de données | PostgreSQL (Docker Compose) |
-
-## Structure
+| Front | Vue 3, TypeScript, Vite, Vue Router, Pinia, axios, Chart.js (vue-chartjs) |
+| Mobile | Capacitor 8 (Android) |
+| Back | NestJS 12, TypeScript, Prisma 7 |
+| Base de données | PostgreSQL 18 via Docker Compose |
+| Authentification | bcrypt + JWT, guards maison (sans Passport) |
+| Sécurité | helmet, CORS restreint, limitation des tentatives de connexion, validation des entrées |
+| Documentation API | Swagger sur `/api/docs` |
+| Tests | Vitest + supertest (tests e2e sur une base dédiée) |
 
 ```
-backend/    API NestJS
-frontend/   application Vue 3 + Capacitor
+backend/    API NestJS (auth, users, moods, stats, health) et schéma Prisma
+frontend/   application Vue 3, et projet Android généré par Capacitor (frontend/android)
 docs/       tutoriel utilisateur, note RGPD et éthique
-docker/     scripts d'initialisation de PostgreSQL
+docker/     script d'initialisation de PostgreSQL (base de test)
 ```
 
-## Démarrer la base de données
+## Installation rapide
 
-Prérequis : Docker Desktop.
+Prérequis : **Docker Desktop** et **Node.js 22 LTS** (ou plus récent).
 
 ```bash
+# 1. Base de données (bases moodly et moodly_test)
 docker compose up -d
-```
 
-Cela lance PostgreSQL sur `localhost:5432` (utilisateur `moodly`, mot de passe `moodly`) avec deux bases :
-
-- `moodly` : base de développement ;
-- `moodly_test` : base utilisée par les tests e2e.
-
-La base `moodly_test` est créée par `docker/init.sql`, qui ne s'exécute qu'au **premier** démarrage. Pour repartir de zéro :
-
-```bash
-docker compose down -v
-docker compose up -d
-```
-
-## Lancer le back
-
-Prérequis : Node.js 22 LTS ou plus récent, et la base de données démarrée (voir ci-dessus).
-
-```bash
+# 2. API
 cd backend
-cp .env.example .env        # puis remplacer JWT_SECRET par une longue chaîne aléatoire
-npm install                 # génère aussi le client Prisma
-npx prisma migrate dev      # crée les tables
-npm run seed                # remplit la base avec les données de démo
-npm run start:dev           # http://localhost:3000/api
+cp .env.example .env
+npm install
+npx prisma migrate dev
+npm run seed
+npm run start:dev            # http://localhost:3000/api
+
+# 3. Application (dans un second terminal)
+cd frontend
+cp .env.example .env
+npm install
+npm run dev                  # http://localhost:5173
 ```
 
-Vérification : `http://localhost:3000/api/health` doit répondre `{"status":"ok"}`.
+> Dans `backend/.env`, remplacez `JWT_SECRET` par une longue chaîne aléatoire, par exemple générée avec
+> `node -e "console.log(require('crypto').randomBytes(48).toString('hex'))"`.
+> L'API refuse de démarrer avec la valeur d'exemple, un secret trop court ou un seuil d'anonymat invalide.
 
-Documentation de l'API (Swagger) : `http://localhost:3000/api/docs`.
+Pour travailler sur le front sans lancer l'API, mettez `VITE_USE_MOCK=true` dans `frontend/.env` : l'application utilise alors des réponses factices.
 
-### Tests e2e
-
-Les tests e2e utilisent la base `moodly_test`, qui est vidée puis remplie à chaque lancement :
-
-```bash
-cp .env.test.example .env.test
-npm run test:e2e
-```
-
-| Commande | Rôle |
-|---|---|
-| `npm run build` | compile le projet |
-| `npm run lint` | vérifie le code (oxlint) |
-| `npm test` | tests unitaires (Vitest) |
-| `npm run test:e2e` | tests de bout en bout |
-| `npm run seed` | vide puis remplit la base de démo |
+Pour repartir d'une base vide : `docker compose down -v` puis `docker compose up -d` (le script `docker/init.sql` ne s'exécute qu'au premier démarrage).
 
 ## Comptes de test
 
-Créés par `npm run seed`. Mot de passe commun : **`Moodly2026!`**
+Créés par `npm run seed`, qui vide puis remplit la base. Mot de passe commun : **`Moodly2026!`**
 
 | Email | Rôle | Équipe |
 |---|---|---|
 | `manager.produit@moodly.dev` | Manager | Équipe Produit |
 | `manager.support@moodly.dev` | Manager | Équipe Support |
 | `alice@moodly.dev` | Employée | Équipe Produit (n'a pas encore répondu aujourd'hui : idéale pour la démo) |
-| `thomas`, `camille`, `hugo`, `lea`, `julien` `@moodly.dev` | Employés | Équipe Produit |
-| `sarah`, `lucas`, `emma`, `nicolas`, `chloe`, `maxime` `@moodly.dev` | Employés | Équipe Support |
+| `thomas`, `camille`, `hugo`, `lea`, `julien` + `@moodly.dev` | Employés | Équipe Produit |
+| `sarah`, `lucas`, `emma`, `nicolas`, `chloe`, `maxime` + `@moodly.dev` | Employés | Équipe Support |
 
-Les données couvrent les 30 derniers jours ouvrés (aujourd'hui exclu) :
+Les données couvrent les 30 derniers jours ouvrés, avec une **semaine « rush »** en milieu de période (baisse nette du moral, « Charge de travail » très citée) puis une remontée, et des jours à faible participation qui apparaissent **masqués** dans le graphe.
 
-- une **semaine « rush »** en milieu de période, avec une baisse nette du moral et le tag « Charge de travail » très présent, puis une remontée ;
-- deux jours avec moins de 3 réponses pour l'Équipe Support, **masqués** dans le graphe pour protéger l'anonymat.
+## API
 
-## Lancer le front
+Préfixe : `/api`. Documentation interactive (Swagger) : **http://localhost:3000/api/docs**.
+
+| Route | Accès | Rôle |
+|---|---|---|
+| `GET /health` | public | vérifier que l'API répond (utile depuis le téléphone) |
+| `POST /auth/login` | public, 5 essais par minute | connexion, renvoie un token JWT (8 h) |
+| `GET /users/me` | connecté | profil de l'utilisateur |
+| `DELETE /users/me` | connecté | suppression du compte (droit à l'effacement) |
+| `GET /moods/today` | employé | a-t-il déjà répondu aujourd'hui ? |
+| `POST /moods` | employé | enregistrer l'humeur du jour |
+| `GET /stats/team?days=30` | manager | statistiques agrégées de **sa** propre équipe |
+
+Les erreurs suivent le format NestJS (`statusCode`, `message`, `error`) avec des messages en français.
+
+## Tests
 
 ```bash
-cd frontend
-cp .env.example .env        # VITE_USE_MOCK=true pour travailler sans le back
-npm install
-npm run dev                 # http://localhost:5173
+cd backend
+cp .env.test.example .env.test
+npm test                     # tests unitaires
+npm run test:e2e             # tests de bout en bout, sur la base moodly_test
+npm run lint
+
+cd ../frontend
+npm run build                # vérification des types + compilation
+npm run lint
 ```
 
-| Commande | Rôle |
-|---|---|
-| `npm run build` | vérifie les types et compile l'application |
-| `npm run lint` | vérifie le code (oxlint + ESLint) |
-| `npm run android` | compile, copie dans le projet Android et ouvre Android Studio |
+Les tests e2e couvrent la connexion, les droits (401 / 403), la validation des saisies (400), la double saisie (409), les statistiques (jours masqués, isolation des équipes), la suppression de compte, et vérifient **directement en base** qu'une humeur enregistrée ne contient aucune donnée de la personne.
 
 ## Lancer sur téléphone (Android)
 
@@ -139,3 +166,29 @@ Prérequis : [Android Studio](https://developer.android.com/studio) (version Ott
    Android Studio s'ouvre : choisissez le téléphone (branché en USB, avec le débogage USB activé) ou l'émulateur, puis cliquez sur ▶ **Run**.
 
 > L'application appelle l'API en HTTP simple, ce qui n'est acceptable que pour une démo sur un réseau local. Ce réglage (`server.cleartext` dans `capacitor.config.ts` et `usesCleartextTraffic` dans le manifeste Android) doit être retiré dès que l'API est servie en HTTPS.
+
+## Scénario de démo
+
+1. `npm run seed` pour repartir des données de démonstration.
+2. Sur le téléphone, connexion avec **`alice@moodly.dev`** : choix d'une humeur et de deux thèmes, envoi, écran « Merci, à demain 👋 ». Un nouvel essai le même jour est refusé.
+3. Connexion avec **`manager.produit@moodly.dev`** : lecture de la courbe (la semaine « rush » se voit nettement), des jours masqués, de la moyenne, du taux de participation et des principales préoccupations.
+4. Explication de l'anonymat : l'humeur est enregistrée sans lien avec la personne, le manager ne reçoit que des moyennes, et les jours à moins de 3 réponses sont masqués.
+
+## Anonymat et RGPD
+
+L'anonymat est garanti par la conception, pas seulement par l'interface :
+
+- l'humeur (`Mood`) ne contient **aucun identifiant de personne**, seulement la note, les thèmes, le jour et l'équipe ;
+- la table `CheckIn` (personne + jour) sert uniquement à empêcher deux réponses le même jour, **sans aucun lien** avec l'humeur ;
+- seul le **jour** est enregistré, jamais l'heure, pour qu'on ne puisse pas rapprocher une réponse d'une connexion ;
+- le manager ne reçoit que des **agrégats calculés côté serveur**, pour sa seule équipe ;
+- un jour avec **moins de 3 réponses est masqué**, et la moyenne globale l'exclut ;
+- pas de commentaire libre ni de thème « santé ».
+
+Le détail des choix (données collectées, durée de conservation, risques éthiques, limites) est dans [`docs/rgpd-ethique.md`](docs/rgpd-ethique.md).
+
+## Documentation
+
+- [Tutoriel utilisateur (employé et manager)](docs/tutoriel.md)
+- [Note RGPD, anonymisation et éthique](docs/rgpd-ethique.md)
+- Documentation de l'API : `http://localhost:3000/api/docs` (une fois l'API lancée)
