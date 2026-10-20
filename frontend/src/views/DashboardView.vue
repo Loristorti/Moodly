@@ -8,10 +8,14 @@ import { moodSoftColor, tagLabel } from '@/constants/mood'
 import type { TeamStats } from '@/types/api'
 import { emojiFor, formatAverage, formatPercent } from '@/utils/format'
 
-const DAYS = 30
+/** Periods the manager can choose (the API accepts 7 to 90 days) */
+const PERIODS = [7, 30, 90]
 
+const days = ref(30)
 const stats = ref<TeamStats | null>(null)
 const loading = ref(true)
+/** Reloading after a period change: the current figures stay on screen meanwhile */
+const refreshing = ref(false)
 const error = ref<string | null>(null)
 
 /** No visible day at all: nothing to draw yet */
@@ -24,14 +28,26 @@ const averageTint = computed(() => {
 })
 
 async function load() {
-  loading.value = true
+  if (stats.value) {
+    refreshing.value = true
+  } else {
+    loading.value = true
+  }
   error.value = null
   try {
-    stats.value = await getTeamStats(DAYS)
+    stats.value = await getTeamStats(days.value)
   } catch (e) {
     error.value = e instanceof ApiError ? e.message : 'Une erreur est survenue.'
   } finally {
     loading.value = false
+    refreshing.value = false
+  }
+}
+
+function selectPeriod(period: number) {
+  if (period !== days.value) {
+    days.value = period
+    void load()
   }
 }
 
@@ -49,12 +65,29 @@ onMounted(load)
       <button type="button" class="button button-secondary" @click="load">Réessayer</button>
     </section>
 
-    <div v-else-if="stats" class="dashboard-grid">
+    <div v-else-if="stats" class="dashboard-grid" :class="{ refreshing }" :aria-busy="refreshing">
       <header class="area-title reveal">
-        <h1>{{ stats.team.name }}</h1>
-        <p class="muted">
-          {{ stats.team.employeeCount }} employés · {{ stats.period.days }} derniers jours
-        </p>
+        <div>
+          <h1>{{ stats.team.name }}</h1>
+          <p class="muted">
+            {{ stats.team.employeeCount }} employés · {{ stats.period.days }} derniers jours
+          </p>
+        </div>
+        <div class="period" role="radiogroup" aria-label="Période affichée">
+          <button
+            v-for="period in PERIODS"
+            :key="period"
+            type="button"
+            role="radio"
+            class="period-option"
+            :class="{ active: days === period }"
+            :aria-checked="days === period"
+            :disabled="refreshing"
+            @click="selectPeriod(period)"
+          >
+            {{ period }} j
+          </button>
+        </div>
       </header>
 
       <section class="area-kpis indicators reveal" style="--order: 1" aria-label="Indicateurs clés">
@@ -200,9 +233,43 @@ onMounted(load)
 
 .area-title {
   display: flex;
-  flex-direction: column;
-  gap: var(--space-3xs);
+  flex-wrap: wrap;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: var(--space-xs);
   padding: var(--space-3xs) var(--space-3xs) 0;
+}
+
+/* Period switch: three segments in a rounded track */
+.period {
+  display: flex;
+  gap: var(--space-3xs);
+  padding: var(--space-3xs);
+  border-radius: var(--radius-small);
+  background: var(--color-surface);
+  border: var(--border-width) solid var(--color-border);
+}
+
+.period-option {
+  min-width: 56px;
+  min-height: var(--tap-size);
+  padding: 0 var(--space-xs);
+  border: none;
+  border-radius: 12px;
+  background: transparent;
+  color: var(--color-text-soft);
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.period-option.active {
+  background: var(--color-primary);
+  color: var(--color-on-primary);
+}
+
+.refreshing {
+  opacity: 0.6;
+  transition: opacity var(--dur-short) var(--ease-out);
 }
 
 .area-title h1 {
