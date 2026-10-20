@@ -23,9 +23,19 @@ function logout() {
           {{ auth.user.firstName }} · {{ auth.user.team.name }}
         </p>
       </div>
-      <button type="button" class="button button-secondary app-header-logout" @click="logout">
-        Déconnexion
-      </button>
+      <nav class="app-header-actions" aria-label="Compte">
+        <RouterLink
+          to="/donnees"
+          class="button button-secondary app-header-icon"
+          aria-label="Vos données"
+          title="Vos données"
+        >
+          <span class="emoji" aria-hidden="true">🔒</span>
+        </RouterLink>
+        <button type="button" class="button button-secondary app-header-logout" @click="logout">
+          Déconnexion
+        </button>
+      </nav>
     </div>
   </header>
 </template>
@@ -77,6 +87,18 @@ function logout() {
   font-weight: 700;
   white-space: nowrap;
   text-overflow: ellipsis;
+}
+
+.app-header-actions {
+  display: flex;
+  flex-shrink: 0;
+  gap: var(--space-2xs);
+}
+
+.app-header-icon {
+  width: var(--tap-size);
+  padding: 0;
+  text-decoration: none;
 }
 
 .app-header-logout {

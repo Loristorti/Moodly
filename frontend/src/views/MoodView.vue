@@ -133,7 +133,10 @@ onMounted(loadTodayStatus)
 
       <p class="notice reveal" style="--order: 3">
         <span class="emoji" aria-hidden="true">🔒</span>
-        <span>Vos réponses sont anonymes : votre manager ne voit que des moyennes d’équipe.</span>
+        <span>
+          Vos réponses sont anonymes : votre manager ne voit que des moyennes d’équipe.
+          <RouterLink to="/donnees" class="mood-more">En savoir plus</RouterLink>
+        </span>
       </p>
 
       <div class="send-bar">
@@ -233,6 +236,11 @@ onMounted(loadTodayStatus)
   background: var(--color-surface);
   font-size: 3.25rem;
   animation: wave 1.4s var(--ease-in-out) 0.5s 1;
+}
+
+.mood-more {
+  color: var(--color-primary-edge);
+  font-weight: 800;
 }
 
 /* Help after a low mood: calm lilac tile */

@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { ref } from 'vue'
-import { useRouter } from 'vue-router'
+import { useRoute, useRouter } from 'vue-router'
 import { ApiError, USE_MOCK } from '@/api/client'
 import { MOOD_SCORES } from '@/constants/mood'
 import { homeFor } from '@/router'
@@ -8,6 +8,8 @@ import { useAuthStore } from '@/stores/auth'
 
 const auth = useAuthStore()
 const router = useRouter()
+/** Set after an account deletion (see PrivacyView) */
+const accountDeleted = useRoute().query.deleted === '1'
 
 const email = ref('')
 const password = ref('')
@@ -64,6 +66,11 @@ async function submit() {
 
       <form class="card login-form reveal" style="--order: 4" novalidate @submit.prevent="submit">
         <h2>Connexion</h2>
+
+        <p v-if="accountDeleted" class="notice" role="status">
+          <span class="emoji" aria-hidden="true">✅</span>
+          <span>Votre compte a bien été supprimé.</span>
+        </p>
 
         <div class="field">
           <label for="email">Email professionnel</label>
