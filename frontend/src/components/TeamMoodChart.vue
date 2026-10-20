@@ -93,7 +93,7 @@ const data = computed<ChartData<'line', (number | null)[]>>(() => ({
       data: props.daily.map((day) => day.average),
       spanGaps: false,
       borderColor: primary,
-      borderWidth: 2,
+      borderWidth: 3,
       borderCapStyle: 'round',
       borderJoinStyle: 'round',
       // Smooth curve that never goes beyond the real values

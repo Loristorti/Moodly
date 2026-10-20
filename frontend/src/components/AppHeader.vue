@@ -37,7 +37,7 @@ function logout() {
   z-index: 10;
   background: var(--color-bg-translucent);
   backdrop-filter: blur(10px);
-  border-bottom: 1px solid var(--color-border);
+  border-bottom: var(--border-width) solid var(--color-border);
 }
 
 .app-header-content {
@@ -64,9 +64,8 @@ function logout() {
 
 .app-header-brand {
   font-family: var(--font-display);
-  font-size: 1.35rem;
-  font-weight: 700;
-  font-variation-settings: 'SOFT' 100;
+  font-size: 1.4rem;
+  font-weight: 900;
   letter-spacing: -0.02em;
   color: var(--color-primary);
   line-height: 1.2;
@@ -74,7 +73,8 @@ function logout() {
 
 .app-header-user {
   overflow: hidden;
-  font-size: 0.85rem;
+  font-size: var(--text-sm);
+  font-weight: 700;
   white-space: nowrap;
   text-overflow: ellipsis;
 }
