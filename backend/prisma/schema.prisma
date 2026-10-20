@@ -21,6 +21,10 @@ enum MoodTag {
   WORK_LIFE_BALANCE // Work-life balance
   RECOGNITION // Recognition
   WORK_CONDITIONS // Working conditions / tools
+  MEANING // Meaning of the work
+  AUTONOMY // Autonomy
+  COMMUNICATION // Communication
+  ORGANIZATION // Work organization (schedules, meetings, remote work)
 }
 
 model Team {
