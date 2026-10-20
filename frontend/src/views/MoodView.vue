@@ -5,6 +5,7 @@ import { getTodayStatus, submitMood } from '@/api/moods'
 import AppHeader from '@/components/AppHeader.vue'
 import MoodPicker from '@/components/MoodPicker.vue'
 import TagSelector from '@/components/TagSelector.vue'
+import { LOW_MOOD_MAX_SCORE, SUPPORT_RESOURCES } from '@/constants/support'
 import type { MoodTag } from '@/types/api'
 
 type Step = 'loading' | 'form' | 'done' | 'error'
@@ -15,6 +16,8 @@ const tags = ref<MoodTag[]>([])
 const sending = ref(false)
 const error = ref<string | null>(null)
 const alreadyAnswered = ref(false)
+/** Score just sent, only kept on screen to show help after a low mood (never stored) */
+const sentScore = ref<number | null>(null)
 
 const today = new Date().toLocaleDateString('fr-FR', {
   weekday: 'long',
@@ -42,6 +45,7 @@ async function send() {
   error.value = null
   try {
     await submitMood({ score: score.value, tags: tags.value })
+    sentScore.value = score.value
     step.value = 'done'
   } catch (e) {
     if (e instanceof ApiError && e.status === 409) {
@@ -83,7 +87,27 @@ onMounted(loadTodayStatus)
           }}
         </p>
       </div>
-      <p class="notice reveal" style="--order: 1">
+
+      <section
+        v-if="sentScore !== null && sentScore <= LOW_MOOD_MAX_SCORE"
+        class="support reveal"
+        style="--order: 1"
+        aria-labelledby="support-title"
+      >
+        <h2 id="support-title">Merci de l’avoir dit.</h2>
+        <p class="support-lead">Si ça ne va pas, vous n’avez pas à le garder pour vous :</p>
+        <ul class="support-list">
+          <li v-for="resource in SUPPORT_RESOURCES" :key="resource.title">
+            <span class="support-emoji emoji" aria-hidden="true">{{ resource.emoji }}</span>
+            <span>
+              <strong>{{ resource.title }}</strong>
+              <span class="support-text">{{ resource.text }}</span>
+            </span>
+          </li>
+        </ul>
+      </section>
+
+      <p class="notice reveal" style="--order: 2">
         <span class="emoji" aria-hidden="true">🔒</span>
         <span>Votre manager ne verra qu’une moyenne de l’équipe, jamais votre réponse.</span>
       </p>
@@ -209,6 +233,51 @@ onMounted(loadTodayStatus)
   background: var(--color-surface);
   font-size: 3.25rem;
   animation: wave 1.4s var(--ease-in-out) 0.5s 1;
+}
+
+/* Help after a low mood: calm lilac tile */
+.support {
+  padding: 20px 18px;
+  border-radius: var(--radius);
+  background: var(--tile-lilac);
+}
+
+.support h2 {
+  font-size: var(--text-lg);
+}
+
+.support-lead {
+  margin: var(--space-3xs) 0 var(--space-xs);
+  color: var(--color-text-soft);
+}
+
+.support-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2xs);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.support-list li {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-xs);
+  padding: var(--space-xs);
+  border-radius: var(--radius-small);
+  background: var(--color-surface);
+}
+
+.support-emoji {
+  font-size: 1.5rem;
+  line-height: 1.2;
+}
+
+.support-text {
+  display: block;
+  font-size: var(--text-sm);
+  color: var(--color-text-soft);
 }
 
 /* One single wave, then still */
