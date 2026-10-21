@@ -12,7 +12,9 @@ import { MoodTag, PrismaClient, Role } from '../src/generated/prisma/client.js';
 const PASSWORD = 'Moodly2026!';
 const HISTORY_DAYS = 30;
 const RUSH_WEEK = { from: 12, to: 16 }; // indexes of the "rush" working days
-const SUPPORT_LOW_PARTICIPATION_DAYS = [5, 22]; // fewer than 3 answers: hidden in the chart
+// Fewer than 3 answers: hidden in the chart. Both fall within the last 30 calendar
+// days shown by the dashboard (the 30 working days of history cover about 6 weeks).
+const SUPPORT_LOW_PARTICIPATION_DAYS = [19, 25];
 
 const TEAMS = [
   {
