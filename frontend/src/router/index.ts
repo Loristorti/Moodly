@@ -9,8 +9,6 @@ declare module 'vue-router' {
     public?: boolean
     /** Role required to open the route */
     role?: Role
-    /** Throwaway prototype page, open to everyone in dev */
-    prototype?: boolean
   }
 }
 
@@ -36,31 +34,11 @@ const router = createRouter({
       component: () => import('@/views/DashboardView.vue'),
       meta: { role: 'MANAGER' },
     },
-    // PROTOTYPE: style exploration, only available with `npm run dev`
-    ...(import.meta.env.DEV
-      ? [
-          {
-            path: '/prototype/styles',
-            name: 'prototype-styles',
-            component: () => import('@/prototypes/styles/StylesPrototype.vue'),
-            meta: { prototype: true },
-          },
-          {
-            path: '/prototype/login',
-            name: 'prototype-login',
-            component: () => import('@/prototypes/styles/LoginPrototype.vue'),
-            meta: { prototype: true },
-          },
-        ]
-      : []),
     { path: '/:pathMatch(.*)*', redirect: '/login' },
   ],
 })
 
 router.beforeEach((to) => {
-  if (to.meta.prototype) {
-    return true
-  }
   const auth = useAuthStore()
 
   if (to.meta.public) {

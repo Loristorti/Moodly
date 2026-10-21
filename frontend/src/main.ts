@@ -1,6 +1,5 @@
-// Fonts bundled with the app (no network needed on the phone)
-import '@fontsource-variable/fraunces/soft.css'
-import '@fontsource-variable/figtree'
+// Font bundled with the app (no network needed on the phone)
+import '@fontsource-variable/nunito'
 import './assets/main.css'
 
 import { createApp } from 'vue'

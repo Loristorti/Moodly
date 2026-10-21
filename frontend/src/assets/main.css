@@ -1,18 +1,11 @@
 /*
- * Moodly visual identity: a calm "logbook" feel.
- * Warm paper background, forest-green ink, one soft color per mood level.
+ * Moodly visual identity: "bento", friendly and clear.
+ * Cream background, rounded tiles, one pastel color per mood level, violet raised buttons.
  * Mobile first, 48px minimum touch targets, readable contrasts.
  * Every value comes from tokens.css.
  */
 
 @import './tokens.css';
-
-/* Animatable color used by the mood screen to tint the page */
-@property --tint {
-  syntax: '<color>';
-  inherits: true;
-  initial-value: transparent;
-}
 
 *,
 *::before,
@@ -33,25 +26,12 @@ html {
 body {
   margin: 0;
   min-height: 100vh;
-  background-color: var(--color-bg);
-  /* Light paper grain */
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 0.35 0 0 0 0 0.27 0 0 0 0 0.15 0 0 0 0.06 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  background: var(--color-bg);
   color: var(--color-text);
   font-family: var(--font-body);
   font-size: var(--text-md);
+  font-weight: 600;
   line-height: 1.5;
-}
-
-/* Two soft organic shapes in the background, behind everything */
-body::before {
-  content: '';
-  position: fixed;
-  inset: 0;
-  z-index: -1;
-  pointer-events: none;
-  background:
-    radial-gradient(38rem 26rem at -10% -8%, var(--color-glow-sage), transparent 70%),
-    radial-gradient(30rem 22rem at 115% 12%, var(--color-glow-honey), transparent 70%);
 }
 
 h1,
@@ -61,8 +41,7 @@ h3 {
   margin: 0;
   font-family: var(--font-display);
   font-style: normal;
-  font-weight: 600;
-  font-variation-settings: 'SOFT' 100;
+  font-weight: 900;
   line-height: 1.15;
   letter-spacing: -0.01em;
   overflow-wrap: anywhere;
@@ -87,6 +66,7 @@ input {
 .emoji {
   font-family: var(--font-emoji);
   font-style: normal;
+  font-weight: 400;
 }
 
 /* Layout */
@@ -95,15 +75,15 @@ input {
   width: 100%;
   max-width: var(--page-width);
   margin: 0 auto;
-  padding: var(--space-md) var(--space-sm) var(--space-xl);
+  padding: var(--space-sm) 14px var(--space-xl);
 }
 
+/* A tile: the base block of every screen */
 .card {
+  padding: 18px;
   background: var(--color-surface);
-  border: 1px solid var(--color-border);
+  border: var(--border-width) solid var(--color-border);
   border-radius: var(--radius);
-  box-shadow: var(--shadow);
-  padding: var(--space-md) 20px;
 }
 
 .muted {
@@ -118,43 +98,49 @@ input {
   justify-content: center;
   gap: var(--space-2xs);
   min-height: var(--tap-size);
-  padding: 0 22px;
-  border: 1px solid transparent;
-  border-radius: var(--radius-pill);
-  font-weight: 650;
+  padding: 0 20px;
+  border: var(--border-width) solid transparent;
+  border-radius: var(--radius-button);
+  font-weight: 800;
   white-space: nowrap;
   cursor: pointer;
   transition:
     background-color var(--dur-short) var(--ease-out),
     border-color var(--dur-short) var(--ease-out),
-    transform var(--dur-short) var(--ease-out);
+    transform var(--dur-short) var(--ease-out),
+    box-shadow var(--dur-short) var(--ease-out);
 }
 
-.button:active:not(:disabled) {
-  transform: scale(0.98);
-}
-
+/* Raised violet button that pushes down when pressed */
 .button-primary {
   width: 100%;
-  min-height: 54px;
+  min-height: 56px;
+  border: none;
   background: var(--color-primary);
-  color: var(--color-on-primary);
   box-shadow: var(--shadow-button);
+  color: var(--color-on-primary);
+  font-size: 1.05rem;
+  font-weight: 900;
 }
 
 .button-primary:hover:not(:disabled) {
   background: var(--color-primary-hover);
 }
 
+.button-primary:active:not(:disabled) {
+  transform: translateY(4px);
+  box-shadow: var(--shadow-button-pressed);
+}
+
 .button-secondary {
-  background: transparent;
-  border-color: var(--color-border);
+  background: var(--color-surface);
+  border-color: var(--color-border-strong);
   color: var(--color-text);
 }
 
 .button-secondary:hover:not(:disabled) {
-  background: var(--color-primary-soft);
-  border-color: var(--color-primary-soft);
+  border-color: var(--color-primary);
+  color: var(--color-primary-edge);
 }
 
 .button:disabled {
@@ -172,25 +158,24 @@ input {
 }
 
 .field label {
-  font-size: 0.9rem;
-  font-weight: 600;
+  font-size: var(--text-sm);
+  font-weight: 800;
+  color: var(--color-text-soft);
 }
 
 .input {
   min-height: 52px;
   padding: 0 var(--space-sm);
-  background: var(--color-bg);
-  border: 1px solid var(--color-border);
+  background: var(--color-surface);
+  border: var(--border-width) solid var(--color-border-strong);
   border-radius: var(--radius-small);
-  transition:
-    border-color var(--dur-short) var(--ease-out),
-    background-color var(--dur-short) var(--ease-out);
+  font-weight: 600;
+  transition: border-color var(--dur-short) var(--ease-out);
 }
 
 .input:focus-visible {
-  outline-offset: 0;
+  outline: none;
   border-color: var(--color-primary);
-  background: var(--color-surface);
 }
 
 /* Messages */
@@ -200,7 +185,7 @@ input {
   border-radius: var(--radius-small);
   background: var(--color-danger-soft);
   color: var(--color-danger);
-  font-weight: 550;
+  font-weight: 700;
 }
 
 .notice {
@@ -209,8 +194,8 @@ input {
   align-items: flex-start;
   padding: var(--space-xs) var(--space-sm);
   border-radius: var(--radius-small);
-  background: var(--color-surface-translucent);
-  border: 1px solid var(--color-border);
+  background: var(--color-surface);
+  border: var(--border-width) solid var(--color-border);
   color: var(--color-text-muted);
   font-size: var(--text-sm);
 }
@@ -219,13 +204,13 @@ input {
 
 .reveal {
   animation: reveal var(--dur-long) var(--ease-out) both;
-  animation-delay: calc(var(--order, 0) * 70ms);
+  animation-delay: calc(var(--order, 0) * 60ms);
 }
 
 @keyframes reveal {
   from {
     opacity: 0;
-    transform: translateY(12px);
+    transform: translateY(10px);
   }
   to {
     opacity: 1;
@@ -245,13 +230,10 @@ input {
   *::before,
   *::after {
     transition-duration: 1ms !important;
+    animation: none !important;
   }
 
   .reveal {
-    animation: fade 150ms linear both;
-  }
-
-  .thanks-hand.reveal {
     animation: fade 150ms linear both !important;
   }
 }

@@ -3,6 +3,17 @@ import { MOOD_SCORES, moodColor, moodSoftColor } from '@/constants/mood'
 
 /** Selected score (1 to 5), or null while nothing is chosen. */
 const score = defineModel<number | null>({ required: true })
+
+/** Bento layout: the best moods on top, "Neutre" as a wide tile in the middle. [score, columns] */
+const LAYOUT: [number, number][] = [
+  [5, 3],
+  [4, 3],
+  [3, 6],
+  [2, 3],
+  [1, 3],
+]
+
+const moodOf = (value: number) => MOOD_SCORES[value - 1]!
 </script>
 
 <template>
@@ -13,18 +24,21 @@ const score = defineModel<number | null>({ required: true })
     aria-label="Votre humeur du jour"
   >
     <button
-      v-for="mood in MOOD_SCORES"
-      :key="mood.score"
+      v-for="[value, span] in LAYOUT"
+      :key="value"
       type="button"
-      class="mood-option"
-      :class="{ selected: score === mood.score }"
-      :style="{ '--color': moodColor(mood.score), '--soft': moodSoftColor(mood.score) }"
-      :aria-label="mood.label"
-      :aria-pressed="score === mood.score"
-      @click="score = mood.score"
+      class="mood-tile"
+      :class="{ selected: score === value, wide: span === 6 }"
+      :style="{
+        gridColumn: `span ${span}`,
+        '--fill': moodSoftColor(value),
+        '--edge': moodColor(value),
+      }"
+      :aria-pressed="score === value"
+      @click="score = value"
     >
-      <span class="mood-emoji emoji" aria-hidden="true">{{ mood.emoji }}</span>
-      <span class="mood-label" aria-hidden="true">{{ mood.label }}</span>
+      <span class="mood-emoji emoji" aria-hidden="true">{{ moodOf(value).emoji }}</span>
+      <span class="mood-label">{{ moodOf(value).label }}</span>
     </button>
   </div>
 </template>
@@ -32,75 +46,61 @@ const score = defineModel<number | null>({ required: true })
 <style scoped>
 .mood-picker {
   display: grid;
-  grid-template-columns: repeat(5, minmax(0, 1fr));
-  gap: 6px;
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+  gap: 10px;
 }
 
-.mood-option {
+/* A raised colored tile, sitting on a darker edge */
+.mood-tile {
   display: flex;
   flex-direction: column;
-  align-items: center;
-  gap: 6px;
-  min-height: 92px;
-  padding: 12px 2px 10px;
-  background: var(--soft);
-  border: 2px solid transparent;
-  border-radius: 18px;
+  align-items: flex-start;
+  justify-content: space-between;
+  min-height: 108px;
+  padding: 14px 16px;
+  border: none;
+  border-radius: var(--radius);
+  background: var(--fill);
+  box-shadow: 0 5px 0 var(--edge);
+  color: var(--color-text);
+  font-weight: 800;
+  text-align: left;
   cursor: pointer;
   transition:
-    border-color var(--dur-short) var(--ease-out),
+    transform var(--dur-short) var(--ease-out),
     opacity var(--dur-medium) var(--ease-out),
-    transform var(--dur-medium) var(--ease-out);
+    box-shadow var(--dur-short) var(--ease-out);
 }
 
-.mood-option:hover {
-  border-color: var(--color);
+.mood-tile.wide {
+  flex-direction: row;
+  align-items: center;
+  justify-content: flex-start;
+  gap: var(--space-xs);
+  min-height: 76px;
+}
+
+.mood-tile:active {
+  transform: translateY(4px);
+  box-shadow: 0 1px 0 var(--edge);
 }
 
 /* Once a mood is chosen, the others step back */
-.has-selection .mood-option:not(.selected) {
-  opacity: 0.55;
+.has-selection .mood-tile:not(.selected) {
+  opacity: 0.5;
 }
 
-.mood-option.selected {
-  border-color: var(--color);
-  background: var(--color-surface);
-  box-shadow: 0 10px 24px -14px var(--color);
-  transform: translateY(-3px);
+.mood-tile.selected {
+  outline: var(--border-width) solid var(--color-text);
+  outline-offset: 0;
 }
 
 .mood-emoji {
-  font-size: 2.1rem;
+  font-size: 2.25rem;
   line-height: 1;
-  transition: transform var(--dur-medium) var(--ease-out);
-}
-
-.mood-option.selected .mood-emoji {
-  transform: scale(1.15);
 }
 
 .mood-label {
-  font-size: 0.68rem;
-  font-weight: 600;
-  line-height: 1.15;
-  text-align: center;
-  white-space: nowrap;
-  color: var(--color-text-muted);
-}
-
-.mood-option.selected .mood-label {
-  color: var(--color-text);
-}
-
-/* Small phones: labels would not fit on one line. The chosen label is
-   written under the picker, and each button keeps its aria-label. */
-@media (max-width: 400px) {
-  .mood-option {
-    min-height: 72px;
-  }
-
-  .mood-label {
-    display: none;
-  }
+  font-size: var(--text-md);
 }
 </style>

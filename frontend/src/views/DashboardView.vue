@@ -71,14 +71,14 @@ onMounted(load)
           </p>
         </div>
 
-        <div class="card indicator">
+        <div class="card indicator indicator-mint">
           <p class="indicator-label">Taux de participation</p>
           <p class="indicator-value">{{ formatPercent(stats.summary.participationRate) }}</p>
         </div>
       </section>
 
       <section class="area-chart card reveal" style="--order: 2">
-        <h2>L’humeur, jour par jour</h2>
+        <h2><span class="emoji" aria-hidden="true">📈</span> L’humeur, jour par jour</h2>
         <p v-if="isEmpty" class="muted center empty">
           Pas encore assez de réponses pour afficher la courbe.
         </p>
@@ -94,7 +94,7 @@ onMounted(load)
 
       <section class="area-concerns card stack reveal" style="--order: 3">
         <div>
-          <h2>Principales préoccupations</h2>
+          <h2><span class="emoji" aria-hidden="true">😟</span> Principales préoccupations</h2>
           <p class="muted small">Les thèmes cités quand l’humeur est basse (1 ou 2 sur 5)</p>
         </div>
         <ol v-if="stats.summary.topConcerns?.length" class="ranking ranking-concerns">
@@ -109,7 +109,7 @@ onMounted(load)
 
       <section class="area-tags card stack reveal" style="--order: 4">
         <div>
-          <h2>Thèmes les plus cités</h2>
+          <h2><span class="emoji" aria-hidden="true">💬</span> Thèmes les plus cités</h2>
           <p class="muted small">Toutes humeurs confondues</p>
         </div>
         <ol v-if="stats.summary.topTags?.length" class="ranking">
@@ -231,18 +231,25 @@ h2 {
   gap: var(--space-xs);
 }
 
+/* Key figures: colored tiles without border */
 .indicator {
   display: flex;
   flex-direction: column;
   justify-content: space-between;
   gap: var(--space-2xs);
+  min-height: 124px;
   padding: 18px;
+  border: none;
+}
+
+.indicator-mint {
+  background: var(--tile-mint);
 }
 
 .indicator-label {
   font-size: var(--text-sm);
-  font-weight: 600;
-  color: var(--color-text-muted);
+  font-weight: 800;
+  color: var(--color-text-soft);
 }
 
 .indicator-value {
@@ -251,8 +258,7 @@ h2 {
   gap: 2px;
   font-family: var(--font-display);
   font-size: var(--text-3xl);
-  font-weight: 600;
-  font-variation-settings: 'SOFT' 100;
+  font-weight: 900;
   font-variant-numeric: tabular-nums;
   line-height: 1;
   letter-spacing: -0.02em;
@@ -260,7 +266,7 @@ h2 {
 
 .indicator-value small {
   font-size: var(--text-md);
-  color: var(--color-text-muted);
+  color: var(--color-text-soft);
 }
 
 .indicator-emoji {
@@ -281,7 +287,7 @@ h2 {
   align-items: center;
   gap: var(--space-xs);
   min-height: var(--tap-size);
-  border-top: 1px solid var(--color-border);
+  border-top: 2px solid var(--color-border);
 }
 
 .ranking li:first-child {
@@ -292,13 +298,13 @@ h2 {
   display: grid;
   place-items: center;
   flex-shrink: 0;
-  width: 30px;
-  height: 30px;
-  border-radius: 50%;
-  background: var(--color-primary-soft);
+  width: 32px;
+  height: 32px;
+  border-radius: 10px;
+  background: var(--tile-lilac);
   font-family: var(--font-display);
-  font-weight: 700;
-  color: var(--color-primary);
+  font-weight: 900;
+  color: var(--color-primary-edge);
 }
 
 .ranking-concerns .ranking-position {
@@ -309,7 +315,7 @@ h2 {
 .ranking-label {
   flex: 1;
   min-width: 0;
-  font-weight: 550;
+  font-weight: 800;
 }
 
 .ranking-count {
