@@ -115,12 +115,16 @@ function randomTags(score: number, isRush: boolean): MoodTag[] {
           MoodTag.WORK_LIFE_BALANCE,
           MoodTag.MANAGEMENT,
           MoodTag.WORK_CONDITIONS,
+          MoodTag.ORGANIZATION,
+          MoodTag.COMMUNICATION,
         ]
       : [
           MoodTag.TEAM_SPIRIT,
           MoodTag.RECOGNITION,
           MoodTag.WORK_LIFE_BALANCE,
           MoodTag.MANAGEMENT,
+          MoodTag.MEANING,
+          MoodTag.AUTONOMY,
         ];
   while (tags.size < Math.min(3, count + (isRush ? 1 : 0))) {
     tags.add(pick(pool));
