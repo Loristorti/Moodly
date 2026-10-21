@@ -107,7 +107,8 @@ const data = computed<ChartData<'line', (number | null)[]>>(() => ({
         gradient.addColorStop(1, fillEnd)
         return gradient
       },
-      pointRadius: 4,
+      // Smaller points on long periods (90 days) so the curve stays readable
+      pointRadius: props.daily.length > 45 ? 2 : 4,
       pointHoverRadius: 7,
       pointHitRadius: 14,
       pointBorderWidth: 2,
