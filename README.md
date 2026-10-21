@@ -30,8 +30,11 @@ Projet réalisé à Epitech Digital School (3e année) par Loris, Daysam et Dine
 | Écran | Pour qui | Ce qu'on y fait |
 |---|---|---|
 | Connexion | tout le monde | se connecter avec son email professionnel ; redirection selon le rôle |
-| Humeur du jour | employé | choisir une humeur (😞 → 😄), jusqu'à 3 thèmes, envoyer ; une seule réponse par jour |
-| Tableau de bord | manager | courbe de l'humeur moyenne sur 30 jours, moyenne, taux de participation, principales préoccupations, thèmes les plus cités |
+| Humeur du jour | employé | choisir une humeur (😞 → 😄) et jusqu'à 3 thèmes parmi 10, envoyer ; une seule réponse par jour. Après une humeur basse (1 ou 2), des ressources de soutien s'affichent (RH, médecine du travail, 3114) |
+| Tableau de bord | manager | courbe de l'humeur moyenne sur 7, 30 ou 90 jours, moyenne, taux de participation, principales préoccupations, thèmes les plus cités, et le détail jour par jour en tableau |
+| Vos données | tout le monde | ce que Moodly enregistre, ce que voit le manager et ce qu'il ne voit jamais ; suppression de son compte |
+
+Les 10 thèmes : charge de travail, ambiance d'équipe, management, équilibre vie pro / perso, reconnaissance, conditions de travail, organisation du travail, communication, autonomie, sens du travail. Aucun thème ne porte sur la santé.
 
 Hors périmètre du MVP, volontairement : historique personnel, inscription libre (les comptes sont fournis par l'employeur), commentaire libre (risque de ré-identification), notifications.
 
@@ -116,7 +119,7 @@ Préfixe : `/api`. Documentation interactive (Swagger) : **http://localhost:3000
 | `GET /health` | public | vérifier que l'API répond (utile depuis le téléphone) |
 | `POST /auth/login` | public, 5 essais par minute | connexion, renvoie un token JWT (8 h) |
 | `GET /users/me` | connecté | profil de l'utilisateur |
-| `DELETE /users/me` | connecté | suppression du compte (droit à l'effacement) |
+| `DELETE /users/me` | connecté | suppression du compte (droit à l'effacement), aussi accessible depuis la page « Vos données » |
 | `GET /moods/today` | employé | a-t-il déjà répondu aujourd'hui ? |
 | `POST /moods` | employé | enregistrer l'humeur du jour |
 | `GET /stats/team?days=30` | manager | statistiques agrégées de **sa** propre équipe |
@@ -137,7 +140,7 @@ npm run build                # vérification des types + compilation
 npm run lint
 ```
 
-Les tests e2e couvrent la connexion, les droits (401 / 403), la validation des saisies (400), la double saisie (409), les statistiques (jours masqués, isolation des équipes), la suppression de compte, et vérifient **directement en base** qu'une humeur enregistrée ne contient aucune donnée de la personne.
+Les tests e2e couvrent la connexion, les droits (401 / 403), la validation des saisies (400, y compris un thème « santé » refusé), la double saisie (409), les statistiques (jours masqués, isolation des équipes), la suppression de compte et la suppression automatique des `CheckIn` passés. Ils vérifient aussi **directement en base** qu'une humeur enregistrée ne contient aucune donnée de la personne.
 
 ## Lancer sur téléphone (Android)
 
@@ -170,9 +173,9 @@ Prérequis : [Android Studio](https://developer.android.com/studio) (version Ott
 ## Scénario de démo
 
 1. `npm run seed` pour repartir des données de démonstration.
-2. Sur le téléphone, connexion avec **`alice@moodly.dev`** : choix d'une humeur et de deux thèmes, envoi, écran « Merci, à demain 👋 ». Un nouvel essai le même jour est refusé.
-3. Connexion avec **`manager.produit@moodly.dev`** : lecture de la courbe (la semaine « rush » se voit nettement), des jours masqués, de la moyenne, du taux de participation et des principales préoccupations.
-4. Explication de l'anonymat : l'humeur est enregistrée sans lien avec la personne, le manager ne reçoit que des moyennes, et les jours à moins de 3 réponses sont masqués.
+2. Sur le téléphone, connexion avec **`alice@moodly.dev`** : choix d'une humeur et de deux thèmes, envoi, écran « Merci, à demain 👋 ». Avec une humeur basse, les ressources de soutien s'affichent. Un nouvel essai le même jour est refusé.
+3. Connexion avec **`manager.produit@moodly.dev`** : lecture de la courbe (la semaine « rush » se voit nettement), des jours masqués, de la moyenne, du taux de participation et des principales préoccupations ; passage de 30 à 90 jours.
+4. Explication de l'anonymat, en s'appuyant sur la page **« Vos données »** (bouton 🔒) : l'humeur est enregistrée sans lien avec la personne, le manager ne reçoit que des moyennes, les jours à moins de 3 réponses sont masqués, et le fait d'avoir répondu est effacé dès le lendemain.
 
 ## Anonymat et RGPD
 
