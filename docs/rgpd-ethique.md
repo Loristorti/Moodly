@@ -66,15 +66,16 @@ Des informations sur l'humeur ou le moral peuvent toucher à l'état de santé, 
 **Ce qui existe dans cette version :**
 
 - la **suppression de compte** (`DELETE /api/users/me`) efface la personne et ses `CheckIn` ; ses humeurs, anonymes, restent dans les moyennes ;
-- après une suppression, le jeton de connexion de la personne est **refusé partout**, même s'il n'a pas encore expiré.
+- après une suppression, le jeton de connexion de la personne est **refusé partout**, même s'il n'a pas encore expiré ;
+- les `CheckIn` des jours passés sont **supprimés automatiquement** : au démarrage de l'API, à chaque nouvelle réponse et toutes les heures.
 
-**Ce que nous proposons pour un déploiement réel :**
+**Durées de conservation :**
 
-| Donnée | Durée proposée | Justification |
-|---|---|---|
-| Humeurs (`Mood`) | **12 mois glissants** | suffisant pour observer des tendances et des effets saisonniers ; au-delà, l'intérêt est faible |
-| `CheckIn` | **jusqu'à la fin de la journée** | ils ne servent qu'à bloquer une deuxième réponse le jour même ; les supprimer chaque nuit renforce aussi l'anonymat (voir section 7) |
-| Comptes (`User`) | **durée du contrat**, puis suppression | rattacher une personne à son équipe n'a plus de raison d'être après son départ |
+| Donnée | Durée | Statut | Justification |
+|---|---|---|---|
+| `CheckIn` | **jusqu'à la fin de la journée** | appliqué | ils ne servent qu'à bloquer une deuxième réponse le jour même ; les supprimer renforce aussi l'anonymat (voir section 7) |
+| Humeurs (`Mood`) | **12 mois glissants** | proposé | suffisant pour observer des tendances et des effets saisonniers ; au-delà, l'intérêt est faible |
+| Comptes (`User`) | **durée du contrat**, puis suppression | proposé | rattacher une personne à son équipe n'a plus de raison d'être après son départ |
 
 Les droits des personnes (information, accès, rectification, effacement, opposition) s'exercent auprès de l'employeur. Pour l'effacement, l'API dispose déjà de la route nécessaire.
 
@@ -95,11 +96,11 @@ Nous sommes conscients qu'un outil, même anonyme, ne remplace ni le dialogue ni
 
 Nous préférons les énoncer clairement.
 
-- **Rapprochement possible par un administrateur de la base.** PostgreSQL enregistre pour chaque ligne un identifiant interne de transaction (`xmin`), ainsi qu'un ordre physique de stockage. Comme un `CheckIn` et son `Mood` sont écrits dans la même transaction, une personne ayant un **accès direct à la base** pourrait les rapprocher. Le manager, qui passe par l'application, ne le peut pas. **Correctif prévu :** supprimer chaque nuit les `CheckIn` des jours passés, qui n'ont plus aucune utilité, comme proposé en section 5.
+- **Rapprochement possible le jour même, par un administrateur de la base.** PostgreSQL enregistre pour chaque ligne un identifiant interne de transaction (`xmin`), ainsi qu'un ordre physique de stockage. Comme un `CheckIn` et son `Mood` sont écrits dans la même transaction, une personne ayant un **accès direct à la base** pourrait les rapprocher. Le manager, qui passe par l'application, ne le peut pas. **Correctif appliqué :** les `CheckIn` des jours passés, qui n'ont plus aucune utilité, sont supprimés automatiquement ; une fois le `CheckIn` supprimé, il n'y a plus rien à rapprocher. Ce risque résiduel est donc limité à la journée en cours, et à un accès technique direct à la base.
 - **HTTP en clair.** Pour la démonstration sur un réseau local, l'application communique avec l'API en HTTP. Un déploiement réel imposerait HTTPS, et la suppression du réglage `cleartext`.
 - **Nombre de réponses des jours masqués.** Le taux de participation permet, par différence avec les jours visibles, d'estimer le **nombre** total de réponses des jours masqués (jamais leur contenu).
 - **Seuil de 3.** Il protège contre les cas évidents, mais reste bas pour de très petites équipes ; il est réglable et devrait être adapté à la taille des équipes.
 - **Pas d'écran d'information ni de bouton de suppression** dans l'application : l'information passe par le tutoriel, et la suppression de compte n'est disponible que par l'API.
-- **Pas de purge automatique** des données selon les durées proposées en section 5.
+- **Pas de purge automatique des humeurs ni des comptes** selon les durées proposées en section 5 (seuls les `CheckIn` passés sont supprimés automatiquement).
 - **Comptes de démonstration** avec un mot de passe commun, uniquement pour la démo.
 - **Validation juridique** (base légale, AIPD, information du CSE) à mener avec un DPO avant tout déploiement réel.

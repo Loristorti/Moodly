@@ -179,7 +179,7 @@ Prérequis : [Android Studio](https://developer.android.com/studio) (version Ott
 L'anonymat est garanti par la conception, pas seulement par l'interface :
 
 - l'humeur (`Mood`) ne contient **aucun identifiant de personne**, seulement la note, les thèmes, le jour et l'équipe ;
-- la table `CheckIn` (personne + jour) sert uniquement à empêcher deux réponses le même jour, **sans aucun lien** avec l'humeur ;
+- la table `CheckIn` (personne + jour) sert uniquement à empêcher deux réponses le même jour, **sans aucun lien** avec l'humeur, et elle est **vidée des jours passés** automatiquement ;
 - seul le **jour** est enregistré, jamais l'heure, pour qu'on ne puisse pas rapprocher une réponse d'une connexion ;
 - le manager ne reçoit que des **agrégats calculés côté serveur**, pour sa seule équipe ;
 - un jour avec **moins de 3 réponses est masqué**, et la moyenne globale l'exclut ;
