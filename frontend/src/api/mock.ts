@@ -102,4 +102,9 @@ export const mock = {
     await wait()
     return buildStats(days)
   },
+
+  async deleteAccount(): Promise<void> {
+    await wait()
+    submittedToday = false
+  },
 }

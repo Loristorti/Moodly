@@ -34,6 +34,12 @@ const router = createRouter({
       component: () => import('@/views/DashboardView.vue'),
       meta: { role: 'MANAGER' },
     },
+    {
+      // Any logged-in user, whatever the role
+      path: '/donnees',
+      name: 'privacy',
+      component: () => import('@/views/PrivacyView.vue'),
+    },
     { path: '/:pathMatch(.*)*', redirect: '/login' },
   ],
 })
