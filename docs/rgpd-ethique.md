@@ -11,8 +11,8 @@ Cette note explique quelles données Moodly traite, comment l'anonymat des répo
 | Donnée | Table | Donnée personnelle ? | Pourquoi elle est nécessaire |
 |---|---|---|---|
 | Email, prénom, nom, mot de passe (haché), rôle, équipe | `User` | oui | se connecter, savoir à quelle équipe rattacher une réponse et quel écran afficher |
-| Personne + jour de réponse | `CheckIn` | oui | empêcher deux réponses le même jour, et rien d'autre |
-| Note de 1 à 5, 0 à 3 thèmes, jour, équipe | `Mood` | **non**, par conception (voir section 2) | calculer les moyennes et les thèmes de l'équipe |
+| Personne + jour de réponse | `CheckIn` | oui | empêcher deux réponses le même jour, et rien d'autre ; effacé dès le lendemain |
+| Note de 1 à 5, 0 à 3 thèmes (parmi 10), jour, équipe | `Mood` | **non**, par conception (voir section 2) | calculer les moyennes et les thèmes de l'équipe |
 
 **Minimisation.** Nous avons volontairement écarté :
 
@@ -57,7 +57,7 @@ Le manager est informé de ce masquage par une mention sous le graphe.
 
 Des informations sur l'humeur ou le moral peuvent toucher à l'état de santé, qui fait partie des **catégories particulières de données** de l'article 9 du RGPD, dont le traitement est en principe interdit sauf exceptions. Pour rester en dehors de ce champ :
 
-- **aucun thème « santé »** n'est proposé ; les 6 thèmes portent sur le contexte de travail (charge, ambiance, management, équilibre vie pro / perso, reconnaissance, conditions de travail) ;
+- **aucun thème « santé »** n'est proposé (ni stress, ni fatigue, ni sommeil) ; les 10 thèmes portent sur le contexte de travail : charge de travail, ambiance d'équipe, management, équilibre vie pro / perso, reconnaissance, conditions de travail, organisation du travail, communication, autonomie, sens du travail. Un thème « santé » envoyé à l'API est refusé, et un test automatique le vérifie ;
 - **aucun texte libre**, où une personne pourrait mentionner une maladie ou un traitement ;
 - les humeurs sont **anonymes** et ne sont exploitées qu'en **moyennes d'équipe**.
 
@@ -65,7 +65,8 @@ Des informations sur l'humeur ou le moral peuvent toucher à l'état de santé, 
 
 **Ce qui existe dans cette version :**
 
-- la **suppression de compte** (`DELETE /api/users/me`) efface la personne et ses `CheckIn` ; ses humeurs, anonymes, restent dans les moyennes ;
+- la **suppression de compte**, depuis la page « Vos données » de l'application (avec une confirmation) ou par l'API (`DELETE /api/users/me`), efface la personne et ses `CheckIn` ; ses humeurs, anonymes, restent dans les moyennes ;
+- la page **« Vos données »** informe chaque utilisateur, dans l'application, de ce qui est enregistré, de ce que voit le manager et de ce qu'il ne voit jamais ;
 - après une suppression, le jeton de connexion de la personne est **refusé partout**, même s'il n'a pas encore expiré ;
 - les `CheckIn` des jours passés sont **supprimés automatiquement** : au démarrage de l'API, à chaque nouvelle réponse et toutes les heures.
 
@@ -77,15 +78,16 @@ Des informations sur l'humeur ou le moral peuvent toucher à l'état de santé, 
 | Humeurs (`Mood`) | **12 mois glissants** | proposé | suffisant pour observer des tendances et des effets saisonniers ; au-delà, l'intérêt est faible |
 | Comptes (`User`) | **durée du contrat**, puis suppression | proposé | rattacher une personne à son équipe n'a plus de raison d'être après son départ |
 
-Les droits des personnes (information, accès, rectification, effacement, opposition) s'exercent auprès de l'employeur. Pour l'effacement, l'API dispose déjà de la route nécessaire.
+Les droits des personnes (information, accès, rectification, effacement, opposition) s'exercent auprès de l'employeur. L'information et l'effacement sont déjà disponibles directement dans l'application.
 
 ## 6. Risques éthiques et garde-fous
 
 | Risque | Garde-fous dans Moodly |
 |---|---|
 | **Pression managériale** : se sentir obligé de répondre, ou de « bien » répondre | participation facultative ; pas de relance ni de notification ; le manager ne voit pas qui a répondu ; aucun taux de participation par personne |
-| **Surveillance perçue** : l'outil vu comme un moyen de contrôle | anonymat par conception, expliqué aux salariés dans l'application et dans le tutoriel ; aucune donnée individuelle n'est consultable |
-| **Ré-identification** dans les petites équipes | seuil de 3 réponses ; jours masqués exclus de la moyenne ; pas de texte libre ; pas d'heure enregistrée |
+| **Surveillance perçue** : l'outil vu comme un moyen de contrôle | anonymat par conception, expliqué dans l'application (page « Vos données ») et dans le tutoriel ; aucune donnée individuelle n'est consultable |
+| **Ré-identification** dans les petites équipes | seuil de 3 réponses ; jours masqués exclus de la moyenne ; pas de texte libre ; pas d'heure enregistrée ; le manager ne voit que les 3 thèmes les plus cités sur toute la période, jamais les thèmes d'un jour donné |
+| **Un salarié en difficulté** qui répond « très mal » sans que rien ne se passe | après une humeur basse (1 ou 2), l'application affiche des ressources de soutien : en parler autour de soi, la médecine du travail, le 3114. Ce message reste sur l'écran du salarié : rien n'est enregistré ni signalé à qui que ce soit, pour ne pas trahir l'anonymat |
 | **Biais de participation** : seuls certains profils répondent | le taux de participation est affiché à côté des résultats, pour en relativiser la portée ; le tutoriel invite à lire une participation faible comme un signal en soi |
 | **Usage détourné** : évaluer des personnes, ou comparer des équipes pour sanctionner | un manager ne voit que sa propre équipe ; le tutoriel rappelle que l'outil sert à repérer une tendance et à ouvrir le dialogue, pas à évaluer |
 | **Réduire le bien-être à un chiffre** | les thèmes et les préoccupations orientent vers des causes concrètes et une discussion collective, plutôt que vers la seule note |
@@ -100,7 +102,7 @@ Nous préférons les énoncer clairement.
 - **HTTP en clair.** Pour la démonstration sur un réseau local, l'application communique avec l'API en HTTP. Un déploiement réel imposerait HTTPS, et la suppression du réglage `cleartext`.
 - **Nombre de réponses des jours masqués.** Le taux de participation permet, par différence avec les jours visibles, d'estimer le **nombre** total de réponses des jours masqués (jamais leur contenu).
 - **Seuil de 3.** Il protège contre les cas évidents, mais reste bas pour de très petites équipes ; il est réglable et devrait être adapté à la taille des équipes.
-- **Pas d'écran d'information ni de bouton de suppression** dans l'application : l'information passe par le tutoriel, et la suppression de compte n'est disponible que par l'API.
+- **Dix thèmes au lieu de six.** Le groupe a élargi la liste pour mieux décrire les situations. Plus il y a de thèmes, plus un thème rare peut, en théorie, désigner quelqu'un dans une très petite équipe. Ce risque reste limité : le manager ne voit que les 3 thèmes les plus cités sur toute la période, jamais le détail par jour.
 - **Pas de purge automatique des humeurs ni des comptes** selon les durées proposées en section 5 (seuls les `CheckIn` passés sont supprimés automatiquement).
 - **Comptes de démonstration** avec un mot de passe commun, uniquement pour la démo.
 - **Validation juridique** (base légale, AIPD, information du CSE) à mener avec un DPO avant tout déploiement réel.
