@@ -2,11 +2,13 @@
 import { computed, onMounted, ref } from 'vue'
 import { ApiError } from '@/api/client'
 import { getTeamStats } from '@/api/stats'
+import { getTeamWeather } from '@/api/weather'
 import AppHeader from '@/components/AppHeader.vue'
 import TeamMessageEditor from '@/components/TeamMessageEditor.vue'
+import TeamWeather from '@/components/TeamWeather.vue'
 import TeamMoodChart from '@/components/TeamMoodChart.vue'
 import { moodSoftColor, tagLabel } from '@/constants/mood'
-import type { TeamStats } from '@/types/api'
+import type { TeamStats, TeamWeather as Weather } from '@/types/api'
 import { alertMessage } from '@/utils/alerts'
 import { emojiFor, formatAverage, formatPercent } from '@/utils/format'
 
@@ -87,7 +89,21 @@ function selectPeriod(period: number) {
   }
 }
 
-onMounted(load)
+/** Same weather as the employees see; the dashboard works without it */
+const weather = ref<Weather | null>(null)
+
+async function loadWeather() {
+  try {
+    weather.value = await getTeamWeather()
+  } catch {
+    weather.value = null
+  }
+}
+
+onMounted(() => {
+  void load()
+  void loadWeather()
+})
 </script>
 
 <template>
@@ -108,6 +124,7 @@ onMounted(load)
           <p class="muted">
             {{ stats.team.employeeCount }} employés · {{ stats.period.days }} derniers jours
           </p>
+          <TeamWeather v-if="weather" :weather="weather" compact class="title-weather" />
         </div>
         <div class="period" role="radiogroup" aria-label="Période affichée">
           <button
@@ -301,6 +318,10 @@ onMounted(load)
   justify-content: space-between;
   gap: var(--space-xs);
   padding: var(--space-3xs) var(--space-3xs) 0;
+}
+
+.title-weather {
+  margin-top: var(--space-2xs);
 }
 
 /* Period switch: three segments in a rounded track */
