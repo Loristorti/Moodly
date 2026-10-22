@@ -7,12 +7,14 @@ import {
   todayParis,
   toIsoDate,
 } from '../common/utils/date.js';
+import { round } from '../common/utils/round.js';
 import { PrismaService } from '../prisma/prisma.service.js';
 import {
   DailyStatDto,
   TagCountDto,
   TeamStatsDto,
 } from './dto/team-stats.dto.js';
+import { buildAlerts } from './insights.js';
 
 /** Average and number of answers of one day, computed by the database. */
 interface DayGroup {
@@ -21,8 +23,15 @@ interface DayGroup {
   answers: number;
 }
 
-const round = (value: number, decimals: number) =>
-  Math.round(value * 10 ** decimals) / 10 ** decimals;
+const toDayGroup = (group: {
+  day: Date;
+  _avg: { score: number | null };
+  _count: { _all: number };
+}): DayGroup => ({
+  day: group.day,
+  average: group._avg.score ?? 0,
+  answers: group._count._all,
+});
 
 @Injectable()
 export class StatsService {
@@ -43,33 +52,52 @@ export class StatsService {
     const to = todayParis();
     const from = addDays(to, -(days - 1));
     const period = { teamId, day: { gte: from, lte: to } };
+    // The same number of days just before, to show the trend
+    const previousPeriod = {
+      teamId,
+      day: { gte: addDays(from, -days), lte: addDays(from, -1) },
+    };
 
-    const [team, employeeCount, groups, tagRows] = await Promise.all([
-      this.prisma.team.findUniqueOrThrow({
-        where: { id: teamId },
-        select: { id: true, name: true },
-      }),
-      this.prisma.user.count({ where: { teamId, role: Role.EMPLOYEE } }),
-      this.prisma.mood.groupBy({
-        by: ['day'],
-        where: period,
-        _avg: { score: true },
-        _count: { _all: true },
-      }),
-      // Tags are lists: Prisma cannot group them, so they are counted here
-      this.prisma.mood.findMany({
-        where: period,
-        select: { score: true, tags: true },
-      }),
-    ]);
+    const [team, employeeCount, groups, previousGroups, tagRows] =
+      await Promise.all([
+        this.prisma.team.findUniqueOrThrow({
+          where: { id: teamId },
+          select: { id: true, name: true },
+        }),
+        this.prisma.user.count({ where: { teamId, role: Role.EMPLOYEE } }),
+        this.prisma.mood.groupBy({
+          by: ['day'],
+          where: period,
+          _avg: { score: true },
+          _count: { _all: true },
+        }),
+        this.prisma.mood.groupBy({
+          by: ['day'],
+          where: previousPeriod,
+          _avg: { score: true },
+          _count: { _all: true },
+        }),
+        // Tags are lists: Prisma cannot group them, so they are counted here
+        this.prisma.mood.findMany({
+          where: period,
+          select: { score: true, tags: true },
+        }),
+      ]);
 
-    const dayGroups: DayGroup[] = groups.map((group) => ({
-      day: group.day,
-      average: group._avg.score ?? 0,
-      answers: group._count._all,
-    }));
+    const dayGroups = groups.map(toDayGroup);
     const totalAnswers = dayGroups.reduce((sum, g) => sum + g.answers, 0);
     const enoughAnswers = totalAnswers >= this.threshold;
+    const lowAnswers = tagRows.filter((row) => row.score <= 2);
+
+    const average = enoughAnswers ? this.visibleAverage(dayGroups) : null;
+    // Visible days only, like the average: no hidden day can be deduced from it
+    const previousAverage = this.visibleAverage(previousGroups.map(toDayGroup));
+    const participationRate = this.participationRate(
+      totalAnswers,
+      employeeCount,
+      from,
+      days,
+    );
 
     return {
       team: { ...team, employeeCount },
@@ -77,17 +105,18 @@ export class StatsService {
       threshold: this.threshold,
       daily: this.buildDaily(from, days, dayGroups),
       summary: {
-        average: enoughAnswers ? this.visibleAverage(dayGroups) : null,
-        participationRate: this.participationRate(
-          totalAnswers,
-          employeeCount,
-          from,
-          days,
-        ),
+        average,
+        previousAverage,
+        participationRate,
         topTags: enoughAnswers ? this.topTags(tagRows) : null,
-        topConcerns: enoughAnswers
-          ? this.topTags(tagRows.filter((row) => row.score <= 2))
-          : null,
+        topConcerns: enoughAnswers ? this.topTags(lowAnswers) : null,
+        alerts: buildAlerts({
+          average,
+          previousAverage,
+          participationRate,
+          lowAnswerTags: lowAnswers.map((row) => row.tags),
+          threshold: this.threshold,
+        }),
       },
     };
   }

@@ -50,6 +50,7 @@ function buildStats(days: number): TeamStats {
     daily,
     summary: {
       average: 3.3,
+      previousAverage: 3.6,
       participationRate: 0.74,
       topTags: [
         { tag: 'WORKLOAD', count: 23 },
@@ -60,6 +61,10 @@ function buildStats(days: number): TeamStats {
         { tag: 'WORKLOAD', count: 18 },
         { tag: 'WORK_CONDITIONS', count: 7 },
         { tag: 'MANAGEMENT', count: 4 },
+      ],
+      alerts: [
+        { type: 'DECLINE', value: -0.3 },
+        { type: 'CONCERN', tag: 'WORKLOAD', value: 0.62 },
       ],
     },
   }

@@ -93,7 +93,20 @@ Le tableau de bord s'utilise sur téléphone comme sur ordinateur. Sur un grand 
 
 À droite du nom de l'équipe, les boutons **7 j**, **30 j** et **90 j** changent la période affichée. Le graphe et tous les indicateurs se recalculent pour la période choisie. Par défaut, le tableau de bord montre les 30 derniers jours.
 
-### 3. Lire le graphe
+### 3. Lire les points « À surveiller »
+
+En haut du tableau de bord, la tuile **« À surveiller »** résume en une à trois phrases ce qui mérite votre attention sur la période :
+
+| Point | Quand il apparaît |
+|---|---|
+| 📉 **La moyenne baisse** | la moyenne a perdu au moins 0,3 point par rapport à la période précédente de même durée |
+| 🔎 **Un thème revient** | un thème est cité dans au moins 40 % des réponses basses (1 ou 2 sur 5), et il y a au moins 3 réponses basses |
+| 🙋 **Participation faible** | moins de la moitié des réponses possibles : les résultats sont moins représentatifs |
+| 🌱 **La moyenne monte** | la moyenne a gagné au moins 0,3 point par rapport à la période précédente |
+
+S'il n'y a rien à signaler, la tuile l'indique simplement. Sous la moyenne, une petite étiquette donne aussi l'évolution (▲ ou ▼) par rapport à la période précédente.
+
+### 4. Lire le graphe
 
 Le graphe **« L'humeur, jour par jour »** montre l'humeur moyenne de l'équipe sur la période choisie.
 
@@ -111,7 +124,7 @@ Sous le graphe, **« Voir les données jour par jour »** déplie un tableau ave
 
 ![Bulle d'information et tableau des données](captures/graphe-detail.png)
 
-### 4. Lire les indicateurs
+### 5. Lire les indicateurs
 
 | Indicateur | Ce qu'il mesure |
 |---|---|
@@ -122,7 +135,7 @@ Sous le graphe, **« Voir les données jour par jour »** déplie un tableau ave
 
 S'il y a trop peu de réponses sur la période, ces indicateurs ne s'affichent pas, toujours pour protéger l'anonymat.
 
-### 5. Interpréter et agir
+### 6. Interpréter et agir
 
 Moodly sert à repérer une **tendance d'équipe**, pas à évaluer des personnes. Quelques repères :
 
@@ -132,7 +145,7 @@ Moodly sert à repérer une **tendance d'équipe**, pas à évaluer des personne
 - **N'essayez jamais de deviner qui a répondu quoi.** L'outil est conçu pour l'empêcher, et la confiance de l'équipe en dépend.
 - **Une participation faible** est aussi une information : elle peut traduire un manque de confiance dans l'outil ou une période chargée. Rappelez que les réponses sont anonymes et facultatives.
 
-### 6. Se déconnecter
+### 7. Se déconnecter
 
 Touchez **Déconnexion** en haut à droite.
 

@@ -1,5 +1,6 @@
-import { ApiProperty } from '@nestjs/swagger';
+import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { MoodTag } from '../../generated/prisma/client.js';
+import { ALERT_TYPES, type AlertType } from '../insights.js';
 
 export class StatsTeamDto {
   @ApiProperty({ example: '9fecd689-87b6-4066-8945-5e28d763763c' })
@@ -49,6 +50,26 @@ export class TagCountDto {
   count: number;
 }
 
+export class AlertDto {
+  @ApiProperty({
+    enum: ALERT_TYPES,
+    example: 'DECLINE',
+    description:
+      'DECLINE / IMPROVEMENT : la moyenne a baissé / monté par rapport à la période précédente ; CONCERN : un thème revient dans les réponses basses ; LOW_PARTICIPATION : moins de la moitié des réponses attendues',
+  })
+  type: AlertType;
+
+  @ApiProperty({
+    example: -0.4,
+    description:
+      'Écart de moyenne (DECLINE, IMPROVEMENT) ou proportion de 0 à 1 (CONCERN, LOW_PARTICIPATION)',
+  })
+  value: number;
+
+  @ApiPropertyOptional({ enum: MoodTag, example: MoodTag.WORKLOAD })
+  tag?: MoodTag;
+}
+
 export class StatsSummaryDto {
   @ApiProperty({
     type: Number,
@@ -57,6 +78,15 @@ export class StatsSummaryDto {
     description: 'Moyenne des jours visibles uniquement',
   })
   average: number | null;
+
+  @ApiProperty({
+    type: Number,
+    nullable: true,
+    example: 3.8,
+    description:
+      'Moyenne des jours visibles de la période précédente, de même durée',
+  })
+  previousAverage: number | null;
 
   @ApiProperty({ example: 0.78 })
   participationRate: number;
@@ -71,6 +101,12 @@ export class StatsSummaryDto {
       'Tags les plus cités quand la note est inférieure ou égale à 2',
   })
   topConcerns: TagCountDto[] | null;
+
+  @ApiProperty({
+    type: [AlertDto],
+    description: 'Au plus 3 points d’attention, le plus urgent en premier',
+  })
+  alerts: AlertDto[];
 }
 
 export class TeamStatsDto {

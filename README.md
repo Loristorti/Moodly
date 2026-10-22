@@ -31,7 +31,7 @@ Projet réalisé à Epitech Digital School (3e année) par Loris, Daysam et Dine
 |---|---|---|
 | Connexion | tout le monde | se connecter avec son email professionnel ; redirection selon le rôle |
 | Humeur du jour | employé | choisir une humeur (😞 → 😄) et jusqu'à 3 thèmes parmi 10, envoyer ; une seule réponse par jour. Après une humeur basse (1 ou 2), des ressources de soutien s'affichent (RH, médecine du travail, 3114) |
-| Tableau de bord | manager | courbe de l'humeur moyenne sur 7, 30 ou 90 jours, moyenne, taux de participation, principales préoccupations, thèmes les plus cités, et le détail jour par jour en tableau |
+| Tableau de bord | manager | points « À surveiller » (baisse ou hausse de la moyenne, thème qui revient dans les réponses basses, participation faible), courbe de l'humeur moyenne sur 7, 30 ou 90 jours, moyenne et son évolution par rapport à la période précédente, taux de participation, principales préoccupations, thèmes les plus cités, et le détail jour par jour en tableau |
 | Vos données | tout le monde | ce que Moodly enregistre, ce que voit le manager et ce qu'il ne voit jamais ; suppression de son compte |
 
 Les 10 thèmes : charge de travail, ambiance d'équipe, management, équilibre vie pro / perso, reconnaissance, conditions de travail, organisation du travail, communication, autonomie, sens du travail. Aucun thème ne porte sur la santé.
@@ -138,7 +138,7 @@ Préfixe : `/api`. Documentation interactive (Swagger) : **http://localhost:3000
 | `DELETE /users/me` | connecté | suppression du compte (droit à l'effacement), aussi accessible depuis la page « Vos données » |
 | `GET /moods/today` | employé | a-t-il déjà répondu aujourd'hui ? |
 | `POST /moods` | employé | enregistrer l'humeur du jour |
-| `GET /stats/team?days=30` | manager | statistiques agrégées de **sa** propre équipe |
+| `GET /stats/team?days=30` | manager | statistiques agrégées de **sa** propre équipe, avec la moyenne de la période précédente et jusqu'à 3 alertes |
 
 Les erreurs suivent le format NestJS (`statusCode`, `message`, `error`) avec des messages en français.
 
@@ -156,7 +156,7 @@ npm run build                # vérification des types + compilation
 npm run lint
 ```
 
-Les tests e2e couvrent la connexion, les droits (401 / 403), la validation des saisies (400, y compris un thème « santé » refusé), la double saisie (409), les statistiques (jours masqués, isolation des équipes), la suppression de compte et la suppression automatique des `CheckIn` passés. Ils vérifient aussi **directement en base** qu'une humeur enregistrée ne contient aucune donnée de la personne.
+Les tests e2e couvrent la connexion, les droits (401 / 403), la validation des saisies (400, y compris un thème « santé » refusé), la double saisie (409), les statistiques (jours masqués, isolation des équipes, tendance et alertes), la suppression de compte et la suppression automatique des `CheckIn` passés. Ils vérifient aussi **directement en base** qu'une humeur enregistrée ne contient aucune donnée de la personne.
 
 ## Lancer sur téléphone (Android)
 
@@ -190,7 +190,7 @@ Prérequis : [Android Studio](https://developer.android.com/studio) (version Ott
 
 1. `npm run seed` pour repartir des données de démonstration.
 2. Sur le téléphone, connexion avec **`alice@moodly.dev`** : choix d'une humeur et de deux thèmes, envoi, écran « Merci, à demain 👋 ». Avec une humeur basse, les ressources de soutien s'affichent. Un nouvel essai le même jour est refusé.
-3. Connexion avec **`manager.produit@moodly.dev`** : lecture de la courbe (la semaine « rush » se voit nettement), des jours masqués, de la moyenne, du taux de participation et des principales préoccupations ; passage de 30 à 90 jours.
+3. Connexion avec **`manager.produit@moodly.dev`** : lecture des points « À surveiller », de la courbe (la semaine « rush » se voit nettement), des jours masqués, de la moyenne et de son évolution, du taux de participation et des principales préoccupations ; passage de 30 à 7 puis 90 jours.
 4. Explication de l'anonymat, en s'appuyant sur la page **« Vos données »** (bouton 🔒) : l'humeur est enregistrée sans lien avec la personne, le manager ne reçoit que des moyennes, les jours à moins de 3 réponses sont masqués, et le fait d'avoir répondu est effacé dès le lendemain.
 
 ## Anonymat et RGPD
@@ -201,7 +201,8 @@ L'anonymat est garanti par la conception, pas seulement par l'interface :
 - la table `CheckIn` (personne + jour) sert uniquement à empêcher deux réponses le même jour, **sans aucun lien** avec l'humeur, et elle est **vidée des jours passés** automatiquement ;
 - seul le **jour** est enregistré, jamais l'heure, pour qu'on ne puisse pas rapprocher une réponse d'une connexion ;
 - le manager ne reçoit que des **agrégats calculés côté serveur**, pour sa seule équipe ;
-- un jour avec **moins de 3 réponses est masqué**, et la moyenne globale l'exclut ;
+- un jour avec **moins de 3 réponses est masqué**, et la moyenne globale l'exclut, comme celle de la période précédente ;
+- une alerte sur un thème n'apparaît que s'il y a au moins 3 réponses basses sur la période ;
 - pas de commentaire libre ni de thème « santé ».
 
 Le détail des choix (données collectées, durée de conservation, risques éthiques, limites) est dans [`docs/rgpd-ethique.md`](docs/rgpd-ethique.md).

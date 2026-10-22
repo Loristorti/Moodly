@@ -27,6 +27,7 @@
   /* Feedback */
   --color-danger: #c92a2a;
   --color-danger-soft: #ffe3e3;
+  --color-success: #2b8a3e;
   --color-focus: #5f3dc4;
 
   /* One color per mood level, from 1 (very bad) to 5 (very good):

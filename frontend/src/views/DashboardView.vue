@@ -6,6 +6,7 @@ import AppHeader from '@/components/AppHeader.vue'
 import TeamMoodChart from '@/components/TeamMoodChart.vue'
 import { moodSoftColor, tagLabel } from '@/constants/mood'
 import type { TeamStats } from '@/types/api'
+import { alertMessage } from '@/utils/alerts'
 import { emojiFor, formatAverage, formatPercent } from '@/utils/format'
 
 /** Periods the manager can choose (the API accepts 7 to 90 days) */
@@ -26,6 +27,40 @@ const averageTint = computed(() => {
   const average = stats.value?.summary.average
   return average == null ? 'var(--color-surface)' : moodSoftColor(Math.round(average))
 })
+
+/** Change of the average compared with the previous period, null if one of them is hidden */
+const trend = computed(() => {
+  const summary = stats.value?.summary
+  if (summary?.average == null || summary.previousAverage == null) {
+    return null
+  }
+  const change = Math.round((summary.average - summary.previousAverage) * 10) / 10
+  const days = stats.value?.period.days
+  const amount = `${formatAverage(Math.abs(change))} ${Math.abs(change) >= 2 ? 'points' : 'point'}`
+  const previous = `par rapport aux ${days} jours précédents`
+  if (change > 0) {
+    return {
+      tone: 'up',
+      value: `▲ +${formatAverage(change)}`,
+      label: `En hausse de ${amount} ${previous}`,
+    }
+  }
+  if (change < 0) {
+    return {
+      tone: 'down',
+      value: `▼ −${formatAverage(-change)}`,
+      label: `En baisse de ${amount} ${previous}`,
+    }
+  }
+  return { tone: 'flat', value: '= stable', label: `Stable ${previous}` }
+})
+
+const alerts = computed(() =>
+  (stats.value?.summary.alerts ?? []).map((alert) => ({
+    ...alertMessage(alert, stats.value?.period.days ?? 30),
+    key: alert.type,
+  })),
+)
 
 async function load() {
   if (stats.value) {
@@ -90,6 +125,22 @@ onMounted(load)
         </div>
       </header>
 
+      <section class="area-alerts card reveal" style="--order: 1" aria-labelledby="alerts-title">
+        <h2 id="alerts-title"><span class="emoji" aria-hidden="true">🧭</span> À surveiller</h2>
+        <ul v-if="alerts.length" class="alerts">
+          <li
+            v-for="alert in alerts"
+            :key="alert.key"
+            class="alert-item"
+            :class="`tone-${alert.tone}`"
+          >
+            <span class="emoji alert-emoji" aria-hidden="true">{{ alert.emoji }}</span>
+            <span>{{ alert.text }}</span>
+          </li>
+        </ul>
+        <p v-else class="muted">Rien de particulier à signaler sur la période.</p>
+      </section>
+
       <section class="area-kpis indicators reveal" style="--order: 1" aria-label="Indicateurs clés">
         <div class="card indicator" :style="{ background: averageTint }">
           <p class="indicator-label">Moyenne sur {{ stats.period.days }} jours</p>
@@ -101,6 +152,13 @@ onMounted(load)
               </span>
             </template>
             <template v-else>—</template>
+          </p>
+          <p v-if="trend" class="indicator-trend" :class="`trend-${trend.tone}`">
+            <span class="trend-text" aria-hidden="true"
+              ><strong>{{ trend.value }}</strong>
+              <span class="trend-period">vs {{ stats.period.days }} j avant</span></span
+            >
+            <span class="sr-only">{{ trend.label }}</span>
           </p>
         </div>
 
@@ -178,18 +236,19 @@ onMounted(load)
     gap: var(--space-md);
   }
 
-  .area-title {
+  .area-title,
+  .area-alerts {
     grid-column: 1 / -1;
   }
 
   .area-chart {
     grid-column: 1 / 9;
-    grid-row: 2;
+    grid-row: 3;
   }
 
   .area-kpis {
     grid-column: 9 / -1;
-    grid-row: 2;
+    grid-row: 3;
     grid-template-columns: minmax(0, 1fr);
     grid-auto-rows: 1fr;
   }
@@ -339,6 +398,88 @@ h2 {
 .indicator-emoji {
   margin-left: auto;
   font-size: 1.6rem;
+}
+
+/* Hidden on screen, read by screen readers */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+.indicator-trend {
+  align-self: flex-start;
+  padding: 2px 10px;
+  border-radius: var(--radius-pill);
+  background: var(--color-surface);
+  font-size: var(--text-sm);
+  font-weight: 800;
+}
+
+/* On a narrow screen, the pill wraps between the value and the period */
+.trend-text {
+  display: flex;
+  flex-wrap: wrap;
+  column-gap: 0.3em;
+}
+
+.indicator-trend strong,
+.trend-period {
+  white-space: nowrap;
+}
+
+.trend-period {
+  font-weight: 700;
+}
+
+.trend-up {
+  color: var(--color-success);
+}
+
+.trend-down {
+  color: var(--color-danger);
+}
+
+.trend-flat {
+  color: var(--color-text-soft);
+}
+
+/* "À surveiller": one short fact per line, tinted by tone */
+.alerts {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2xs);
+  margin: var(--space-xs) 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.alert-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: var(--space-xs) var(--space-sm);
+  border-radius: var(--radius-small);
+  font-weight: 700;
+}
+
+.alert-emoji {
+  flex-shrink: 0;
+}
+
+.tone-warning {
+  background: var(--mood-2-soft);
+}
+
+.tone-info {
+  background: var(--tile-lilac);
+}
+
+.tone-positive {
+  background: var(--mood-4-soft);
 }
 
 .ranking {
