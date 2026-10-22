@@ -80,6 +80,14 @@ export interface TeamStats {
   }
 }
 
+export type WeatherType = 'SUNNY' | 'PARTLY_CLOUDY' | 'CLOUDY' | 'RAINY'
+
+/** Weather of the team over the 7 days before today: a category, never a number */
+export interface TeamWeather {
+  weather: WeatherType | null
+  period: { from: string; to: string }
+}
+
 /** Message from the manager to the whole team */
 export interface TeamMessage {
   content: string

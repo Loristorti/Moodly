@@ -54,6 +54,8 @@ L'écran **« Merci, à demain 👋 »** confirme que votre réponse est enregis
 
 Vous pouvez répondre **une seule fois par jour**. Si vous rouvrez l'application plus tard dans la journée, c'est cet écran qui s'affiche. Une nouvelle saisie sera possible le lendemain.
 
+Juste en dessous, la tuile **« La météo de l'équipe »** résume le moral de l'équipe sur les 7 derniers jours : ☀️ grand soleil, ⛅ éclaircies, ☁️ nuageux ou 🌧️ pluie. Elle ne compte pas les réponses du jour, donc pas la vôtre, et ne montre jamais de chiffre. S'il n'y a pas eu assez de réponses, elle l'indique simplement.
+
 Si votre manager a publié un message pour l'équipe, il apparaît dans la carte **« Le mot de votre manager »**, sur l'écran de saisie comme sur l'écran de remerciement. C'est sa manière de vous dire ce qu'il a compris des résultats et ce qu'il compte faire.
 
 ### 4. Si ça ne va pas
@@ -92,6 +94,8 @@ Le tableau de bord s'utilise sur téléphone comme sur ordinateur. Sur un grand 
 ![Tableau de bord du manager](captures/dashboard.png)
 
 ### 2. Choisir la période
+
+Sous le nom de l'équipe, une étiquette donne la **météo de l'équipe** sur les 7 derniers jours : c'est exactement ce que voient les employés après avoir répondu.
 
 À droite du nom de l'équipe, les boutons **7 j**, **30 j** et **90 j** changent la période affichée. Le graphe et tous les indicateurs se recalculent pour la période choisie. Par défaut, le tableau de bord montre les 30 derniers jours.
 

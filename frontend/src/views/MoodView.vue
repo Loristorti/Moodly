@@ -3,12 +3,14 @@ import { onMounted, ref } from 'vue'
 import { ApiError } from '@/api/client'
 import { getTodayStatus, submitMood } from '@/api/moods'
 import { getTeamMessage } from '@/api/teamMessage'
+import { getTeamWeather } from '@/api/weather'
 import AppHeader from '@/components/AppHeader.vue'
 import MoodPicker from '@/components/MoodPicker.vue'
 import TagSelector from '@/components/TagSelector.vue'
 import TeamMessageCard from '@/components/TeamMessageCard.vue'
+import TeamWeather from '@/components/TeamWeather.vue'
 import { LOW_MOOD_MAX_SCORE, SUPPORT_RESOURCES } from '@/constants/support'
-import type { MoodTag, TeamMessage } from '@/types/api'
+import type { MoodTag, TeamMessage, TeamWeather as Weather } from '@/types/api'
 
 type Step = 'loading' | 'form' | 'done' | 'error'
 
@@ -22,6 +24,8 @@ const alreadyAnswered = ref(false)
 const sentScore = ref<number | null>(null)
 /** Message of the manager to the team, if there is one */
 const teamMessage = ref<TeamMessage | null>(null)
+/** Weather of the team, shown after the answer */
+const weather = ref<Weather | null>(null)
 
 const today = new Date().toLocaleDateString('fr-FR', {
   weekday: 'long',
@@ -72,9 +76,19 @@ async function loadTeamMessage() {
   }
 }
 
+/** Optional too: the thank-you screen works without it */
+async function loadWeather() {
+  try {
+    weather.value = await getTeamWeather()
+  } catch {
+    weather.value = null
+  }
+}
+
 onMounted(() => {
   void loadTodayStatus()
   void loadTeamMessage()
+  void loadWeather()
 })
 </script>
 
@@ -122,6 +136,8 @@ onMounted(() => {
           </li>
         </ul>
       </section>
+
+      <TeamWeather v-if="weather" :weather="weather" class="reveal" style="--order: 2" />
 
       <TeamMessageCard
         v-if="teamMessage"

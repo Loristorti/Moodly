@@ -30,8 +30,8 @@ Projet réalisé à Epitech Digital School (3e année) par Loris, Daysam et Dine
 | Écran | Pour qui | Ce qu'on y fait |
 |---|---|---|
 | Connexion | tout le monde | se connecter avec son email professionnel ; redirection selon le rôle |
-| Humeur du jour | employé | choisir une humeur (😞 → 😄) et jusqu'à 3 thèmes parmi 10, envoyer ; une seule réponse par jour. Après une humeur basse (1 ou 2), des ressources de soutien s'affichent (RH, médecine du travail, 3114). Le dernier message du manager à l'équipe s'affiche aussi |
-| Tableau de bord | manager | points « À surveiller » (baisse ou hausse de la moyenne, thème qui revient dans les réponses basses, participation faible), courbe de l'humeur moyenne sur 7, 30 ou 90 jours, moyenne et son évolution par rapport à la période précédente, taux de participation, principales préoccupations, thèmes les plus cités, le détail jour par jour en tableau, et un message à publier pour toute l'équipe (280 caractères) |
+| Humeur du jour | employé | choisir une humeur (😞 → 😄) et jusqu'à 3 thèmes parmi 10, envoyer ; une seule réponse par jour. Après une humeur basse (1 ou 2), des ressources de soutien s'affichent (RH, médecine du travail, 3114). Le dernier message du manager à l'équipe s'affiche aussi, ainsi que la **météo de l'équipe** (☀️ ⛅ ☁️ 🌧️) sur les 7 derniers jours |
+| Tableau de bord | manager | météo de l'équipe sur 7 jours, points « À surveiller » (baisse ou hausse de la moyenne, thème qui revient dans les réponses basses, participation faible), courbe de l'humeur moyenne sur 7, 30 ou 90 jours, moyenne et son évolution par rapport à la période précédente, taux de participation, principales préoccupations, thèmes les plus cités, le détail jour par jour en tableau, et un message à publier pour toute l'équipe (280 caractères) |
 | Vos données | tout le monde | ce que Moodly enregistre, ce que voit le manager et ce qu'il ne voit jamais ; suppression de son compte |
 
 Les 10 thèmes : charge de travail, ambiance d'équipe, management, équilibre vie pro / perso, reconnaissance, conditions de travail, organisation du travail, communication, autonomie, sens du travail. Aucun thème ne porte sur la santé.
@@ -139,6 +139,7 @@ Préfixe : `/api`. Documentation interactive (Swagger) : **http://localhost:3000
 | `GET /moods/today` | employé | a-t-il déjà répondu aujourd'hui ? |
 | `POST /moods` | employé | enregistrer l'humeur du jour |
 | `GET /stats/team?days=30` | manager | statistiques agrégées de **sa** propre équipe, avec la moyenne de la période précédente et jusqu'à 3 alertes |
+| `GET /team-weather` | connecté | météo de **son** équipe sur les 7 jours avant aujourd'hui : une catégorie, jamais un chiffre |
 | `GET /team-message` | connecté | message du manager à **son** équipe (`null` s'il n'y en a pas) |
 | `PUT /team-message` | manager | publier ou remplacer le message de son équipe |
 | `DELETE /team-message` | manager | retirer le message |
@@ -159,7 +160,7 @@ npm run build                # vérification des types + compilation
 npm run lint
 ```
 
-Les tests e2e couvrent la connexion, les droits (401 / 403), la validation des saisies (400, y compris un thème « santé » refusé), la double saisie (409), les statistiques (jours masqués, isolation des équipes, tendance et alertes), la suppression de compte, la suppression automatique des `CheckIn` passés et le message du manager (droits, validation, isolation des équipes). Ils vérifient aussi **directement en base** qu'une humeur enregistrée ne contient aucune donnée de la personne.
+Les tests e2e couvrent la connexion, les droits (401 / 403), la validation des saisies (400, y compris un thème « santé » refusé), la double saisie (409), les statistiques (jours masqués, isolation des équipes, tendance et alertes), la suppression de compte, la suppression automatique des `CheckIn` passés et le message du manager (droits, validation, isolation des équipes) et la météo de l'équipe (jours masqués et jour même exclus, aucun chiffre renvoyé). Ils vérifient aussi **directement en base** qu'une humeur enregistrée ne contient aucune donnée de la personne.
 
 ## Lancer sur téléphone (Android)
 
@@ -206,6 +207,7 @@ L'anonymat est garanti par la conception, pas seulement par l'interface :
 - le manager ne reçoit que des **agrégats calculés côté serveur**, pour sa seule équipe ;
 - un jour avec **moins de 3 réponses est masqué**, et la moyenne globale l'exclut, comme celle de la période précédente ;
 - une alerte sur un thème n'apparaît que s'il y a au moins 3 réponses basses sur la période ;
+- l'employé ne voit de son équipe qu'une **météo** (4 catégories), calculée sur les jours visibles des 7 jours précédents, sans le jour même ;
 - pas de commentaire libre ni de thème « santé ».
 
 Le détail des choix (données collectées, durée de conservation, risques éthiques, limites) est dans [`docs/rgpd-ethique.md`](docs/rgpd-ethique.md).

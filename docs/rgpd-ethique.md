@@ -50,6 +50,7 @@ Avec une ou deux réponses dans la journée, un manager pourrait deviner qui a r
 - un jour sous le seuil est **masqué** dans le graphe : la courbe y fait un trou, et la moyenne comme le nombre de réponses ne sont pas transmis ;
 - si le **total** de réponses de la période est sous le seuil, la moyenne globale et les classements de thèmes ne sont pas affichés ;
 - la **moyenne globale exclut les jours masqués**. Sans cette précaution, on pourrait retrouver la moyenne d'un jour masqué par soustraction, à partir de la moyenne globale et des jours visibles. La moyenne de la **période précédente**, utilisée pour afficher l'évolution, suit la même règle ;
+- la **météo de l'équipe**, visible par les employés, ne donne qu'une **catégorie** parmi 4 (☀️ ⛅ ☁️ 🌧️), jamais un chiffre. Elle porte sur les **jours visibles** des 7 jours précédents et **exclut le jour même** : un salarié ne peut pas comparer la météo avant et après sa propre réponse, ni en déduire celle d'un collègue ;
 - les **points « À surveiller »** sont calculés à partir de ces agrégats. Celui qui signale un thème récurrent dans les réponses basses exige en plus **au moins 3 réponses basses** sur la période, pour ne jamais décrire une ou deux personnes ;
 - le seuil est **réglable** (variable `MIN_RESPONSES_PER_DAY`), et l'API **refuse de démarrer** avec une valeur invalide ou inférieure à 2, pour éviter qu'une erreur de configuration désactive le masquage sans que personne ne s'en aperçoive.
 

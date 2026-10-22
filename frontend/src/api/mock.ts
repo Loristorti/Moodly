@@ -5,6 +5,7 @@ import type {
   Team,
   TeamMessage,
   TeamStats,
+  TeamWeather,
 } from '@/types/api'
 import { ApiError } from './client'
 
@@ -118,6 +119,16 @@ export const mock = {
   async getTeamStats(days: number): Promise<TeamStats> {
     await wait()
     return buildStats(days)
+  },
+
+  async getTeamWeather(): Promise<TeamWeather> {
+    await wait()
+    const day = (daysAgo: number) => {
+      const date = new Date()
+      date.setDate(date.getDate() - daysAgo)
+      return isoDate(date)
+    }
+    return { weather: 'PARTLY_CLOUDY', period: { from: day(7), to: day(1) } }
   },
 
   async getTeamMessage(): Promise<TeamMessage | null> {
