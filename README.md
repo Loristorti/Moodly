@@ -103,6 +103,7 @@ Pour la démo, le script `scripts/start-demo.ps1` fait tout d'un coup : il déma
 ```powershell
 powershell -ExecutionPolicy Bypass -File scripts/start-demo.ps1          # tout lancer
 powershell -ExecutionPolicy Bypass -File scripts/start-demo.ps1 -Reset   # et remettre les données de démo
+powershell -ExecutionPolicy Bypass -File scripts/stop-demo.ps1           # tout arrêter (les données sont conservées)
 ```
 
 Le script détecte l'adresse du PC sur le Wi-Fi et règle l'API et l'application pour cette session, sans modifier les fichiers `.env`. Au premier lancement, Windows demande d'autoriser les ports 3000 et 5173 dans le pare-feu. Pour tout arrêter, il suffit de fermer les trois fenêtres « Moodly ».

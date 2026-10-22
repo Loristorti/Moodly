@@ -140,8 +140,7 @@ Write-Host '    manager.produit@moodly.dev ... tableau de bord'
 Write-Host '    manager.support@moodly.dev ... tableau de bord (autre equipe)'
 Write-Host ''
 Write-Host '  QR code : une image s ouvre, a scanner avec l appareil photo du telephone.'
-Write-Host '  Pour tout arreter : fermer les 3 fenetres "Moodly - ...".'
-Write-Host '  La base de donnees reste allumee : docker compose stop pour l arreter.'
+Write-Host '  Pour tout arreter : powershell -ExecutionPolicy Bypass -File scripts/stop-demo.ps1'
 Write-Host '==========================================================' -ForegroundColor Green
 
 Start-Process 'http://localhost:5173'
