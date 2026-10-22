@@ -3,6 +3,7 @@ import { computed, onMounted, ref } from 'vue'
 import { ApiError } from '@/api/client'
 import { getTeamStats } from '@/api/stats'
 import AppHeader from '@/components/AppHeader.vue'
+import TeamMessageEditor from '@/components/TeamMessageEditor.vue'
 import TeamMoodChart from '@/components/TeamMoodChart.vue'
 import { moodSoftColor, tagLabel } from '@/constants/mood'
 import type { TeamStats } from '@/types/api'
@@ -212,6 +213,8 @@ onMounted(load)
         </ol>
         <p v-else class="muted">Pas assez de réponses sur la période.</p>
       </section>
+
+      <TeamMessageEditor class="area-message card reveal" style="--order: 5" />
     </div>
   </main>
 </template>
@@ -237,7 +240,8 @@ onMounted(load)
   }
 
   .area-title,
-  .area-alerts {
+  .area-alerts,
+  .area-message {
     grid-column: 1 / -1;
   }
 
