@@ -14,7 +14,12 @@ import {
   TagCountDto,
   TeamStatsDto,
 } from './dto/team-stats.dto.js';
+import { TeamWeatherDto } from './dto/team-weather.dto.js';
 import { buildAlerts } from './insights.js';
+import { weatherFor } from './weather.js';
+
+/** The weather covers the last 7 days, today excluded */
+const WEATHER_DAYS = 7;
 
 /** Average and number of answers of one day, computed by the database. */
 interface DayGroup {
@@ -42,6 +47,28 @@ export class StatsService {
     config: ConfigService,
   ) {
     this.threshold = Number(config.get('MIN_RESPONSES_PER_DAY', 3));
+  }
+
+  /**
+   * Weather of the team over the 7 days before today, for employees and managers.
+   * Today is left out, so that nobody can compare the weather before and after
+   * their own answer, and only a category is returned, never a number.
+   */
+  async getTeamWeather(teamId: string): Promise<TeamWeatherDto> {
+    const to = addDays(todayParis(), -1);
+    const from = addDays(to, -(WEATHER_DAYS - 1));
+
+    const groups = await this.prisma.mood.groupBy({
+      by: ['day'],
+      where: { teamId, day: { gte: from, lte: to } },
+      _avg: { score: true },
+      _count: { _all: true },
+    });
+
+    return {
+      weather: weatherFor(this.visibleAverage(groups.map(toDayGroup))),
+      period: { from: toIsoDate(from), to: toIsoDate(to) },
+    };
   }
 
   /**
