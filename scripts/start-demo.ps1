@@ -3,9 +3,10 @@
 # et sur un telephone connecte au meme Wi-Fi.
 #
 # Utilisation, depuis la racine du projet :
-#   powershell -ExecutionPolicy Bypass -File scripts\start-demo.ps1          (lance tout)
-#   powershell -ExecutionPolicy Bypass -File scripts\start-demo.ps1 -Reset   (remet aussi les donnees de demo)
-#   powershell -ExecutionPolicy Bypass -File scripts\start-demo.ps1 -Check   (affiche l'adresse du PC, ne lance rien)
+#   powershell -ExecutionPolicy Bypass -File scripts/start-demo.ps1          (lance tout)
+#   powershell -ExecutionPolicy Bypass -File scripts/start-demo.ps1 -Reset   (remet aussi les donnees de demo)
+#   powershell -ExecutionPolicy Bypass -File scripts/start-demo.ps1 -Check   (affiche l'adresse du PC, ne lance rien)
+# (avec "/" la commande marche dans PowerShell comme dans Git Bash)
 
 param(
   [switch]$Reset,

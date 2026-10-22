@@ -101,8 +101,8 @@ Pour repartir d'une base vide : `docker compose down -v` puis `docker compose up
 Pour la démo, le script `scripts/start-demo.ps1` fait tout d'un coup : il démarre Docker et la base, applique les migrations, ouvre une fenêtre pour l'API, une pour l'application et une pour Prisma Studio, puis affiche les adresses à ouvrir sur le PC et sur un téléphone, avec un QR code.
 
 ```powershell
-powershell -ExecutionPolicy Bypass -File scripts\start-demo.ps1          # tout lancer
-powershell -ExecutionPolicy Bypass -File scripts\start-demo.ps1 -Reset   # et remettre les données de démo
+powershell -ExecutionPolicy Bypass -File scripts/start-demo.ps1          # tout lancer
+powershell -ExecutionPolicy Bypass -File scripts/start-demo.ps1 -Reset   # et remettre les données de démo
 ```
 
 Le script détecte l'adresse du PC sur le Wi-Fi et règle l'API et l'application pour cette session, sans modifier les fichiers `.env`. Au premier lancement, Windows demande d'autoriser les ports 3000 et 5173 dans le pare-feu. Pour tout arrêter, il suffit de fermer les trois fenêtres « Moodly ».
