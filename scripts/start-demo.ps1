@@ -139,8 +139,7 @@ Write-Host '    alice@moodly.dev ............. employee, n a pas encore repondu'
 Write-Host '    manager.produit@moodly.dev ... tableau de bord'
 Write-Host '    manager.support@moodly.dev ... tableau de bord (autre equipe)'
 Write-Host ''
-Write-Host '  Scanner avec l appareil photo du telephone :'
-npx -y qrcode-terminal@0.12.0 $app
+Write-Host '  QR code : une image s ouvre, a scanner avec l appareil photo du telephone.'
 Write-Host '  Pour tout arreter : fermer les 3 fenetres "Moodly - ...".'
 Write-Host '  La base de donnees reste allumee : docker compose stop pour l arreter.'
 Write-Host '==========================================================' -ForegroundColor Green
@@ -148,3 +147,8 @@ Write-Host '==========================================================' -Foregro
 Start-Process 'http://localhost:5173'
 Start-Process 'http://localhost:3000/api/docs'
 Start-Process 'http://localhost:5555'
+
+# QR code of the phone address, as an image (the address changes with the network)
+$qrImage = Join-Path $env:TEMP 'moodly-qr.png'
+npx -y qrcode@1.5.4 -o $qrImage -w 480 -m 2 $app | Out-Null
+if (Test-Path $qrImage) { Start-Process $qrImage }
