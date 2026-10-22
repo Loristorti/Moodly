@@ -24,6 +24,9 @@ const TEAMS = [
       firstName: 'Nathalie',
       lastName: 'Lambert',
     },
+    // Answer of the manager to the "rush" week, shown to the whole team
+    message:
+      'Merci pour vos retours sur la charge de travail pendant le rush. On décale la prochaine livraison d’une semaine, et on en reparle ensemble vendredi.',
     employees: [
       ['Alice', 'Martin'],
       ['Thomas', 'Dubois'],
@@ -40,6 +43,7 @@ const TEAMS = [
       firstName: 'Philippe',
       lastName: 'Garnier',
     },
+    message: null,
     employees: [
       ['Sarah', 'Bonnet'],
       ['Lucas', 'Mercier'],
@@ -138,6 +142,7 @@ async function main() {
   });
 
   await prisma.$transaction([
+    prisma.teamMessage.deleteMany(),
     prisma.checkIn.deleteMany(),
     prisma.mood.deleteMany(),
     prisma.user.deleteMany(),
@@ -151,6 +156,11 @@ async function main() {
 
   for (const teamData of TEAMS) {
     const team = await prisma.team.create({ data: { name: teamData.name } });
+    if (teamData.message) {
+      await prisma.teamMessage.create({
+        data: { teamId: team.id, content: teamData.message },
+      });
+    }
 
     await prisma.user.create({
       data: {
