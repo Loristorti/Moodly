@@ -32,6 +32,7 @@ model Team {
   name      String   @unique
   users     User[]
   moods     Mood[]
+  message   TeamMessage?
   createdAt DateTime @default(now())
 }
 
@@ -67,4 +68,13 @@ model CheckIn {
   day    DateTime @db.Date
 
   @@id([userId, day])
+}
+
+/// Message from the manager to the whole team (one per team). Written by the
+/// manager under their role: it holds no data about the employees.
+model TeamMessage {
+  teamId    String   @id
+  team      Team     @relation(fields: [teamId], references: [id], onDelete: Cascade)
+  content   String   @db.VarChar(280)
+  updatedAt DateTime @updatedAt
 }
