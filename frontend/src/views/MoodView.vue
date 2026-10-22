@@ -2,11 +2,13 @@
 import { onMounted, ref } from 'vue'
 import { ApiError } from '@/api/client'
 import { getTodayStatus, submitMood } from '@/api/moods'
+import { getTeamMessage } from '@/api/teamMessage'
 import AppHeader from '@/components/AppHeader.vue'
 import MoodPicker from '@/components/MoodPicker.vue'
 import TagSelector from '@/components/TagSelector.vue'
+import TeamMessageCard from '@/components/TeamMessageCard.vue'
 import { LOW_MOOD_MAX_SCORE, SUPPORT_RESOURCES } from '@/constants/support'
-import type { MoodTag } from '@/types/api'
+import type { MoodTag, TeamMessage } from '@/types/api'
 
 type Step = 'loading' | 'form' | 'done' | 'error'
 
@@ -18,6 +20,8 @@ const error = ref<string | null>(null)
 const alreadyAnswered = ref(false)
 /** Score just sent, only kept on screen to show help after a low mood (never stored) */
 const sentScore = ref<number | null>(null)
+/** Message of the manager to the team, if there is one */
+const teamMessage = ref<TeamMessage | null>(null)
 
 const today = new Date().toLocaleDateString('fr-FR', {
   weekday: 'long',
@@ -59,7 +63,19 @@ async function send() {
   }
 }
 
-onMounted(loadTodayStatus)
+/** Optional: if it fails, the employee can still answer */
+async function loadTeamMessage() {
+  try {
+    teamMessage.value = await getTeamMessage()
+  } catch {
+    teamMessage.value = null
+  }
+}
+
+onMounted(() => {
+  void loadTodayStatus()
+  void loadTeamMessage()
+})
 </script>
 
 <template>
@@ -107,7 +123,14 @@ onMounted(loadTodayStatus)
         </ul>
       </section>
 
-      <p class="notice reveal" style="--order: 2">
+      <TeamMessageCard
+        v-if="teamMessage"
+        :message="teamMessage"
+        class="reveal"
+        style="--order: 2"
+      />
+
+      <p class="notice reveal" style="--order: 3">
         <span class="emoji" aria-hidden="true">🔒</span>
         <span>Votre manager ne verra qu’une moyenne de l’équipe, jamais votre réponse.</span>
       </p>
@@ -138,6 +161,13 @@ onMounted(loadTodayStatus)
           <RouterLink to="/donnees" class="mood-more">En savoir plus</RouterLink>
         </span>
       </p>
+
+      <TeamMessageCard
+        v-if="teamMessage"
+        :message="teamMessage"
+        class="reveal"
+        style="--order: 4"
+      />
 
       <div class="send-bar">
         <p v-if="error" class="alert" role="alert">{{ error }}</p>
