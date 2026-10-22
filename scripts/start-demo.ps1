@@ -40,9 +40,9 @@ if ($Check) { exit 0 }
 
 # 1. Free the ports (asks before stopping anything)
 Write-Step 'Verification des ports'
-$ports = [ordered]@{ 3000 = 'API'; 5173 = 'application'; 5555 = 'Prisma Studio' }
+$ports = [ordered]@{ '3000' = 'API'; '5173' = 'application'; '5555' = 'Prisma Studio' }
 foreach ($port in $ports.Keys) {
-  $connection = Get-NetTCPConnection -LocalPort $port -State Listen -ErrorAction SilentlyContinue | Select-Object -First 1
+  $connection = Get-NetTCPConnection -LocalPort ([int]$port) -State Listen -ErrorAction SilentlyContinue | Select-Object -First 1
   if ($connection) {
     $process = Get-Process -Id $connection.OwningProcess -ErrorAction SilentlyContinue
     $answer = Read-Host "Le port $port ($($ports[$port])) est deja utilise par '$($process.ProcessName)'. L'arreter ? (o/n)"
@@ -98,27 +98,46 @@ if (-not (Test-Path "$root\frontend\node_modules")) {
   Push-Location "$root\frontend"; npm install; Pop-Location
 }
 
-# 5. One window per service, with its logs. CORS and API URL are set for this
-#    session only: the .env files are not modified.
-Write-Step 'Lancement de l API, de l application et de Prisma Studio'
-$cors = "http://localhost:5173,http://localhost,capacitor://localhost,http://${ip}:5173"
-Start-Process powershell -WorkingDirectory "$root\backend" -ArgumentList '-NoExit', '-Command',
-  "`$host.UI.RawUI.WindowTitle = 'Moodly - API'; `$env:CORS_ORIGINS = '$cors'; npm run start:dev"
-Start-Process powershell -WorkingDirectory "$root\frontend" -ArgumentList '-NoExit', '-Command',
-  "`$host.UI.RawUI.WindowTitle = 'Moodly - Application'; `$env:VITE_API_URL = 'http://${ip}:3000/api'; `$env:VITE_USE_MOCK = 'false'; npx vite --host --port 5173 --strictPort"
-Start-Process powershell -WorkingDirectory "$root\backend" -ArgumentList '-NoExit', '-Command',
-  "`$host.UI.RawUI.WindowTitle = 'Moodly - Base de donnees'; npx prisma studio --port 5555 --browser none"
+# 5. Compile the API once (a few seconds), then start everything in the background,
+#    without windows. Each service writes its logs to a file.
+Write-Step 'Compilation de l API'
+Push-Location "$root\backend"
+npm run build | Out-Null
+if ($LASTEXITCODE -ne 0) { Write-Host 'La compilation de l API a echoue : lance "npm run build" dans backend pour voir l erreur.' -ForegroundColor Red; Pop-Location; exit 1 }
+Pop-Location
 
-Write-Host 'Attente de l API (la premiere compilation peut prendre 2 a 3 minutes)...'
+Write-Step 'Lancement de l API, de l application et de Prisma Studio (en arriere-plan)'
+$logs = Join-Path $env:TEMP 'moodly-logs'
+New-Item -ItemType Directory -Force $logs | Out-Null
+
+# CORS and API URL are set for these processes only: the .env files are not modified
+$env:CORS_ORIGINS = "http://localhost:5173,http://localhost,capacitor://localhost,http://${ip}:5173"
+$env:VITE_API_URL = "http://${ip}:3000/api"
+$env:VITE_USE_MOCK = 'false'
+
+function Start-MoodlyProcess($name, $file, $arguments, $folder) {
+  $process = Start-Process -FilePath $file -ArgumentList $arguments -WorkingDirectory $folder -WindowStyle Hidden -PassThru `
+    -RedirectStandardOutput "$logs\$name.log" -RedirectStandardError "$logs\$name-erreurs.log"
+  # Remembered so that stop-demo.ps1 can stop the whole process tree
+  Add-Content -Path "$logs\pids.txt" -Value $process.Id
+}
+
+Remove-Item "$logs\pids.txt" -ErrorAction SilentlyContinue
+Start-MoodlyProcess 'api' 'node' 'dist/main.js' "$root\backend"
+Start-MoodlyProcess 'application' 'npx.cmd' 'vite --host --port 5173 --strictPort' "$root\frontend"
+Start-MoodlyProcess 'prisma-studio' 'npx.cmd' 'prisma studio --port 5555 --browser none' "$root\backend"
+
+# 127.0.0.1 and not localhost: on Windows, "localhost" first tries IPv6, where the API does not listen
+Write-Host 'Attente de l API...'
 $apiUp = $false
-for ($i = 0; $i -lt 120; $i++) {
-  Start-Sleep -Seconds 2
+for ($i = 0; $i -lt 60; $i++) {
+  Start-Sleep -Seconds 1
   try {
-    Invoke-WebRequest -UseBasicParsing -TimeoutSec 2 "http://localhost:3000/api/health" | Out-Null
+    Invoke-WebRequest -UseBasicParsing -TimeoutSec 5 'http://127.0.0.1:3000/api/health' | Out-Null
     $apiUp = $true; break
   } catch { }
 }
-if (-not $apiUp) { Write-Host "L'API ne repond pas encore : regarde la fenetre 'Moodly - API'." -ForegroundColor Yellow }
+if (-not $apiUp) { Write-Host "L'API ne repond pas : regarde $logs\api-erreurs.log" -ForegroundColor Yellow }
 
 # 6. Summary
 $app = "http://${ip}:5173"
@@ -140,6 +159,7 @@ Write-Host '    manager.produit@moodly.dev ... tableau de bord'
 Write-Host '    manager.support@moodly.dev ... tableau de bord (autre equipe)'
 Write-Host ''
 Write-Host '  QR code : une image s ouvre, a scanner avec l appareil photo du telephone.'
+Write-Host "  Logs (en cas d erreur) : $logs"
 Write-Host '  Pour tout arreter : powershell -ExecutionPolicy Bypass -File scripts/stop-demo.ps1'
 Write-Host '==========================================================' -ForegroundColor Green
 

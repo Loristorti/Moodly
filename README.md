@@ -98,7 +98,7 @@ Pour repartir d'une base vide : `docker compose down -v` puis `docker compose up
 
 ### Tout lancer en une commande (Windows)
 
-Pour la démo, le script `scripts/start-demo.ps1` fait tout d'un coup : il démarre Docker et la base, applique les migrations, ouvre une fenêtre pour l'API, une pour l'application et une pour Prisma Studio, puis affiche les adresses à ouvrir sur le PC et sur un téléphone, avec un QR code.
+Pour la démo, le script `scripts/start-demo.ps1` fait tout d'un coup : il démarre Docker et la base, applique les migrations, compile l'API, lance en arrière-plan l'API, l'application et Prisma Studio, puis affiche les adresses à ouvrir sur le PC et sur un téléphone, et ouvre un QR code. Les logs de chaque service sont écrits dans le dossier `moodly-logs` du répertoire temporaire de Windows (le chemin exact est affiché).
 
 ```powershell
 powershell -ExecutionPolicy Bypass -File scripts/start-demo.ps1          # tout lancer
@@ -106,7 +106,7 @@ powershell -ExecutionPolicy Bypass -File scripts/start-demo.ps1 -Reset   # et re
 powershell -ExecutionPolicy Bypass -File scripts/stop-demo.ps1           # tout arrêter (les données sont conservées)
 ```
 
-Le script détecte l'adresse du PC sur le Wi-Fi et règle l'API et l'application pour cette session, sans modifier les fichiers `.env`. Au premier lancement, Windows demande d'autoriser les ports 3000 et 5173 dans le pare-feu. Pour tout arrêter, il suffit de fermer les trois fenêtres « Moodly ».
+Le script détecte l'adresse du PC sur le Wi-Fi et règle l'API et l'application pour cette session, sans modifier les fichiers `.env`. Au premier lancement, Windows demande d'autoriser les ports 3000 et 5173 dans le pare-feu. Pour tout arrêter, utilisez `scripts/stop-demo.ps1`.
 
 **Sur un iPhone** (ou n'importe quel téléphone) : scannez le QR code, ou ouvrez dans Safari l'adresse affichée (`http://<IP du PC>:5173`). C'est la même application, servie par le PC. Dans Safari, **Partager → Sur l'écran d'accueil** l'ajoute comme une app. L'application Android native, elle, se construit avec Capacitor (voir plus bas). Une version iOS native demanderait un Mac avec Xcode.
 
