@@ -33,6 +33,7 @@ export async function createTestApp(): Promise<INestApplication<App>> {
 /** Empties every table, then creates 2 teams with 1 manager and 1 employee each. */
 export async function resetDatabase(prisma: PrismaService) {
   await prisma.$transaction([
+    prisma.teamMessage.deleteMany(),
     prisma.checkIn.deleteMany(),
     prisma.mood.deleteMany(),
     prisma.user.deleteMany(),
