@@ -30,8 +30,8 @@ Projet réalisé à Epitech Digital School (3e année) par Loris, Daysam et Dine
 | Écran | Pour qui | Ce qu'on y fait |
 |---|---|---|
 | Connexion | tout le monde | se connecter avec son email professionnel ; redirection selon le rôle |
-| Humeur du jour | employé | choisir une humeur (😞 → 😄) et jusqu'à 3 thèmes parmi 10, envoyer ; une seule réponse par jour. Après une humeur basse (1 ou 2), des ressources de soutien s'affichent (RH, médecine du travail, 3114) |
-| Tableau de bord | manager | points « À surveiller » (baisse ou hausse de la moyenne, thème qui revient dans les réponses basses, participation faible), courbe de l'humeur moyenne sur 7, 30 ou 90 jours, moyenne et son évolution par rapport à la période précédente, taux de participation, principales préoccupations, thèmes les plus cités, et le détail jour par jour en tableau |
+| Humeur du jour | employé | choisir une humeur (😞 → 😄) et jusqu'à 3 thèmes parmi 10, envoyer ; une seule réponse par jour. Après une humeur basse (1 ou 2), des ressources de soutien s'affichent (RH, médecine du travail, 3114). Le dernier message du manager à l'équipe s'affiche aussi |
+| Tableau de bord | manager | points « À surveiller » (baisse ou hausse de la moyenne, thème qui revient dans les réponses basses, participation faible), courbe de l'humeur moyenne sur 7, 30 ou 90 jours, moyenne et son évolution par rapport à la période précédente, taux de participation, principales préoccupations, thèmes les plus cités, le détail jour par jour en tableau, et un message à publier pour toute l'équipe (280 caractères) |
 | Vos données | tout le monde | ce que Moodly enregistre, ce que voit le manager et ce qu'il ne voit jamais ; suppression de son compte |
 
 Les 10 thèmes : charge de travail, ambiance d'équipe, management, équilibre vie pro / perso, reconnaissance, conditions de travail, organisation du travail, communication, autonomie, sens du travail. Aucun thème ne porte sur la santé.
@@ -59,7 +59,7 @@ flowchart LR
 | Tests | Vitest + supertest (tests e2e sur une base dédiée) |
 
 ```
-backend/    API NestJS (auth, users, moods, stats, health) et schéma Prisma
+backend/    API NestJS (auth, users, moods, stats, team-message, health) et schéma Prisma
 frontend/   application Vue 3, et projet Android généré par Capacitor (frontend/android)
 docs/       tutoriel utilisateur, note RGPD et éthique
 docker/     script d'initialisation de PostgreSQL (base de test)
@@ -124,7 +124,7 @@ Créés par `npm run seed`, qui vide puis remplit la base. Mot de passe commun :
 | `thomas`, `camille`, `hugo`, `lea`, `julien` + `@moodly.dev` | Employés | Équipe Produit |
 | `sarah`, `lucas`, `emma`, `nicolas`, `chloe`, `maxime` + `@moodly.dev` | Employés | Équipe Support |
 
-Les données couvrent les 30 derniers jours ouvrés, avec une **semaine « rush »** en milieu de période (baisse nette du moral, « Charge de travail » très citée) puis une remontée, et des jours à faible participation qui apparaissent **masqués** dans le graphe.
+Les données couvrent les 30 derniers jours ouvrés, avec une **semaine « rush »** en milieu de période (baisse nette du moral, « Charge de travail » très citée) puis une remontée, et des jours à faible participation qui apparaissent **masqués** dans le graphe. Le compte manager de l'Équipe Produit a publié un message en réponse à la semaine « rush ».
 
 ## API
 
@@ -139,6 +139,9 @@ Préfixe : `/api`. Documentation interactive (Swagger) : **http://localhost:3000
 | `GET /moods/today` | employé | a-t-il déjà répondu aujourd'hui ? |
 | `POST /moods` | employé | enregistrer l'humeur du jour |
 | `GET /stats/team?days=30` | manager | statistiques agrégées de **sa** propre équipe, avec la moyenne de la période précédente et jusqu'à 3 alertes |
+| `GET /team-message` | connecté | message du manager à **son** équipe (`null` s'il n'y en a pas) |
+| `PUT /team-message` | manager | publier ou remplacer le message de son équipe |
+| `DELETE /team-message` | manager | retirer le message |
 
 Les erreurs suivent le format NestJS (`statusCode`, `message`, `error`) avec des messages en français.
 
@@ -156,7 +159,7 @@ npm run build                # vérification des types + compilation
 npm run lint
 ```
 
-Les tests e2e couvrent la connexion, les droits (401 / 403), la validation des saisies (400, y compris un thème « santé » refusé), la double saisie (409), les statistiques (jours masqués, isolation des équipes, tendance et alertes), la suppression de compte et la suppression automatique des `CheckIn` passés. Ils vérifient aussi **directement en base** qu'une humeur enregistrée ne contient aucune donnée de la personne.
+Les tests e2e couvrent la connexion, les droits (401 / 403), la validation des saisies (400, y compris un thème « santé » refusé), la double saisie (409), les statistiques (jours masqués, isolation des équipes, tendance et alertes), la suppression de compte, la suppression automatique des `CheckIn` passés et le message du manager (droits, validation, isolation des équipes). Ils vérifient aussi **directement en base** qu'une humeur enregistrée ne contient aucune donnée de la personne.
 
 ## Lancer sur téléphone (Android)
 
@@ -190,7 +193,7 @@ Prérequis : [Android Studio](https://developer.android.com/studio) (version Ott
 
 1. `npm run seed` pour repartir des données de démonstration.
 2. Sur le téléphone, connexion avec **`alice@moodly.dev`** : choix d'une humeur et de deux thèmes, envoi, écran « Merci, à demain 👋 ». Avec une humeur basse, les ressources de soutien s'affichent. Un nouvel essai le même jour est refusé.
-3. Connexion avec **`manager.produit@moodly.dev`** : lecture des points « À surveiller », de la courbe (la semaine « rush » se voit nettement), des jours masqués, de la moyenne et de son évolution, du taux de participation et des principales préoccupations ; passage de 30 à 7 puis 90 jours.
+3. Connexion avec **`manager.produit@moodly.dev`** : lecture des points « À surveiller », de la courbe (la semaine « rush » se voit nettement), des jours masqués, de la moyenne et de son évolution, du taux de participation et des principales préoccupations ; passage de 30 à 7 puis 90 jours ; modification du message à l'équipe, qu'Alice voit ensuite sur son écran.
 4. Explication de l'anonymat, en s'appuyant sur la page **« Vos données »** (bouton 🔒) : l'humeur est enregistrée sans lien avec la personne, le manager ne reçoit que des moyennes, les jours à moins de 3 réponses sont masqués, et le fait d'avoir répondu est effacé dès le lendemain.
 
 ## Anonymat et RGPD

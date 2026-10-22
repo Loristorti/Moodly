@@ -13,6 +13,7 @@ Cette note explique quelles données Moodly traite, comment l'anonymat des répo
 | Email, prénom, nom, mot de passe (haché), rôle, équipe | `User` | oui | se connecter, savoir à quelle équipe rattacher une réponse et quel écran afficher |
 | Personne + jour de réponse | `CheckIn` | oui | empêcher deux réponses le même jour, et rien d'autre ; effacé dès le lendemain |
 | Note de 1 à 5, 0 à 3 thèmes (parmi 10), jour, équipe | `Mood` | **non**, par conception (voir section 2) | calculer les moyennes et les thèmes de l'équipe |
+| Message du manager à son équipe (280 caractères), date de mise à jour | `TeamMessage` | non sur les salariés : il est écrit par le manager, sous son rôle | informer l'équipe des suites données aux résultats |
 
 **Minimisation.** Nous avons volontairement écarté :
 
@@ -91,6 +92,7 @@ Les droits des personnes (information, accès, rectification, effacement, opposi
 | **Un salarié en difficulté** qui répond « très mal » sans que rien ne se passe | après une humeur basse (1 ou 2), l'application affiche des ressources de soutien : en parler autour de soi, la médecine du travail, le 3114. Ce message reste sur l'écran du salarié : rien n'est enregistré ni signalé à qui que ce soit, pour ne pas trahir l'anonymat |
 | **Biais de participation** : seuls certains profils répondent | le taux de participation est affiché à côté des résultats, pour en relativiser la portée ; le tutoriel invite à lire une participation faible comme un signal en soi |
 | **Usage détourné** : évaluer des personnes, ou comparer des équipes pour sanctionner | un manager ne voit que sa propre équipe ; le tutoriel rappelle que l'outil sert à repérer une tendance et à ouvrir le dialogue, pas à évaluer |
+| **Des réponses sans suite** : l'équipe répond, mais rien ne change, et la participation s'effondre | le manager peut publier un message à toute l'équipe, visible sur l'écran de saisie, pour dire ce qu'il a compris et ce qu'il fait. Ce message s'adresse à l'équipe entière : il n'a aucun lien avec une réponse ou une personne |
 | **Réduire le bien-être à un chiffre** | les thèmes et les préoccupations orientent vers des causes concrètes et une discussion collective, plutôt que vers la seule note |
 
 Nous sommes conscients qu'un outil, même anonyme, ne remplace ni le dialogue ni l'action sur les causes : Moodly est un **signal**, à utiliser comme point de départ d'une conversation.

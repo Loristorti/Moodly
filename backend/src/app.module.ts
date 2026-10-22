@@ -8,6 +8,7 @@ import { HealthModule } from './health/health.module.js';
 import { MoodsModule } from './moods/moods.module.js';
 import { PrismaModule } from './prisma/prisma.module.js';
 import { StatsModule } from './stats/stats.module.js';
+import { TeamMessageModule } from './team-message/team-message.module.js';
 import { UsersModule } from './users/users.module.js';
 
 @Module({
@@ -18,6 +19,7 @@ import { UsersModule } from './users/users.module.js';
     UsersModule,
     MoodsModule,
     StatsModule,
+    TeamMessageModule,
     HealthModule,
   ],
   providers: [{ provide: APP_FILTER, useClass: PrismaExceptionFilter }],

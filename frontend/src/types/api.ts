@@ -80,6 +80,13 @@ export interface TeamStats {
   }
 }
 
+/** Message from the manager to the whole team */
+export interface TeamMessage {
+  content: string
+  /** ISO date and time of the last change */
+  updatedAt: string
+}
+
 /** Error body returned by NestJS. */
 export interface ApiErrorBody {
   statusCode: number

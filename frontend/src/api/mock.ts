@@ -1,4 +1,11 @@
-import type { DailyStat, LoginResponse, MoodStatus, Team, TeamStats } from '@/types/api'
+import type {
+  DailyStat,
+  LoginResponse,
+  MoodStatus,
+  Team,
+  TeamMessage,
+  TeamStats,
+} from '@/types/api'
 import { ApiError } from './client'
 
 /**
@@ -12,6 +19,11 @@ const DEMO_PASSWORD = 'Moodly2026!'
 const TEAM: Team = { id: 'mock-team', name: 'Équipe Produit' }
 
 let submittedToday = false
+let teamMessage: TeamMessage | null = {
+  content:
+    'Merci pour vos retours sur la charge de travail pendant le rush. On décale la prochaine livraison d’une semaine, et on en reparle ensemble vendredi.',
+  updatedAt: new Date().toISOString(),
+}
 
 const wait = (ms = 400) => new Promise((resolve) => setTimeout(resolve, ms))
 
@@ -106,6 +118,22 @@ export const mock = {
   async getTeamStats(days: number): Promise<TeamStats> {
     await wait()
     return buildStats(days)
+  },
+
+  async getTeamMessage(): Promise<TeamMessage | null> {
+    await wait()
+    return teamMessage
+  },
+
+  async publishTeamMessage(content: string): Promise<TeamMessage> {
+    await wait()
+    teamMessage = { content: content.trim(), updatedAt: new Date().toISOString() }
+    return teamMessage
+  },
+
+  async removeTeamMessage(): Promise<void> {
+    await wait()
+    teamMessage = null
   },
 
   async deleteAccount(): Promise<void> {

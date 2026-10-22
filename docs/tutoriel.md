@@ -54,6 +54,8 @@ L'écran **« Merci, à demain 👋 »** confirme que votre réponse est enregis
 
 Vous pouvez répondre **une seule fois par jour**. Si vous rouvrez l'application plus tard dans la journée, c'est cet écran qui s'affiche. Une nouvelle saisie sera possible le lendemain.
 
+Si votre manager a publié un message pour l'équipe, il apparaît dans la carte **« Le mot de votre manager »**, sur l'écran de saisie comme sur l'écran de remerciement. C'est sa manière de vous dire ce qu'il a compris des résultats et ce qu'il compte faire.
+
 ### 4. Si ça ne va pas
 
 Si vous avez choisi 🙁 *Pas terrible* ou 😞 *Très mal*, l'écran de remerciement affiche aussi **vers qui vous tourner** :
@@ -145,7 +147,17 @@ Moodly sert à repérer une **tendance d'équipe**, pas à évaluer des personne
 - **N'essayez jamais de deviner qui a répondu quoi.** L'outil est conçu pour l'empêcher, et la confiance de l'équipe en dépend.
 - **Une participation faible** est aussi une information : elle peut traduire un manque de confiance dans l'outil ou une période chargée. Rappelez que les réponses sont anonymes et facultatives.
 
-### 7. Se déconnecter
+### 7. Écrire à votre équipe
+
+En bas du tableau de bord, la tuile **« Votre message à l'équipe »** permet de publier un court message (280 caractères au plus). Toute l'équipe le voit sur son écran de saisie.
+
+- Écrivez ce que vous avez compris et ce que vous allez faire : « Merci pour vos retours sur la charge de travail. On décale la prochaine livraison d'une semaine. »
+- **Mettre à jour** remplace l'ancien message ; **Retirer** le supprime.
+- Le message ne s'adresse jamais à une personne : vous ne savez pas qui a répondu quoi, et c'est voulu.
+
+Montrer à l'équipe que ses réponses sont lues et suivies d'effets est la meilleure façon de garder une participation élevée.
+
+### 8. Se déconnecter
 
 Touchez **Déconnexion** en haut à droite.
 
