@@ -109,9 +109,9 @@ Start-Process powershell -WorkingDirectory "$root\frontend" -ArgumentList '-NoEx
 Start-Process powershell -WorkingDirectory "$root\backend" -ArgumentList '-NoExit', '-Command',
   "`$host.UI.RawUI.WindowTitle = 'Moodly - Base de donnees'; npx prisma studio --port 5555 --browser none"
 
-Write-Host 'Attente de l API...'
+Write-Host 'Attente de l API (la premiere compilation peut prendre 2 a 3 minutes)...'
 $apiUp = $false
-for ($i = 0; $i -lt 60; $i++) {
+for ($i = 0; $i -lt 120; $i++) {
   Start-Sleep -Seconds 2
   try {
     Invoke-WebRequest -UseBasicParsing -TimeoutSec 2 "http://localhost:3000/api/health" | Out-Null
