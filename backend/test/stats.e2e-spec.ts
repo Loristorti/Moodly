@@ -57,6 +57,13 @@ describe('Stats (e2e)', () => {
         mood(product.id, 3, 1, ['WORKLOAD', 'MANAGEMENT']),
         mood(product.id, 3, 2, ['WORKLOAD']),
         mood(product.id, 3, 2, ['WORKLOAD']),
+        // Previous 30-day period: 35 days ago, 3 good answers -> visible
+        mood(product.id, 35, 5, ['TEAM_SPIRIT']),
+        mood(product.id, 35, 5, []),
+        mood(product.id, 35, 4, []),
+        // 40 days ago: only 2 answers -> hidden, left out of the trend
+        mood(product.id, 40, 1, []),
+        mood(product.id, 40, 1, []),
         // Other team: only 2 answers in the whole period
         mood(support.id, 1, 5, ['RECOGNITION']),
         mood(support.id, 1, 5, ['RECOGNITION']),
@@ -132,10 +139,13 @@ describe('Stats (e2e)', () => {
       name: 'Équipe Produit',
       employeeCount: 1,
     });
+    const participationRate = Math.round((8 / workingDays) * 100) / 100;
     expect(body.summary).toEqual({
       // (4 + 4 + 5 + 1 + 2 + 2) / 6: the hidden day (1 and 2) is not included
       average: 3,
-      participationRate: Math.round((8 / workingDays) * 100) / 100,
+      // (5 + 5 + 4) / 3, 35 days ago: the hidden day 40 days ago is not included
+      previousAverage: 4.7,
+      participationRate,
       topTags: [
         { tag: 'WORKLOAD', count: 4 },
         { tag: 'RECOGNITION', count: 2 },
@@ -146,7 +156,23 @@ describe('Stats (e2e)', () => {
         { tag: 'MANAGEMENT', count: 1 },
         { tag: 'WORK_CONDITIONS', count: 1 },
       ],
+      alerts: [
+        { type: 'DECLINE', value: -1.7 },
+        // WORKLOAD is cited in 4 of the 5 low answers
+        { type: 'CONCERN', tag: 'WORKLOAD', value: 0.8 },
+        { type: 'LOW_PARTICIPATION', value: participationRate },
+      ],
     });
+  });
+
+  it('gives no trend when the previous period has no visible day', async () => {
+    // Previous 7-day period: from 13 to 7 days ago, no answer
+    const { body } = await getStats(productManagerToken, '?days=7').expect(200);
+
+    expect(body.summary.previousAverage).toBeNull();
+    expect(
+      body.summary.alerts.map((alert: { type: string }) => alert.type),
+    ).not.toContain('DECLINE');
   });
 
   it('only shows the manager’s own team, and hides everything under the threshold', async () => {
@@ -156,9 +182,16 @@ describe('Stats (e2e)', () => {
     expect(body.daily.every((day: DailyStat) => day.hidden)).toBe(true);
     expect(body.summary).toMatchObject({
       average: null,
+      previousAverage: null,
       topTags: null,
       topConcerns: null,
     });
+    // Only the participation can be pointed out: nothing about the answers
+    expect(
+      body.summary.alerts.every(
+        (alert: { type: string }) => alert.type === 'LOW_PARTICIPATION',
+      ),
+    ).toBe(true);
   });
 
   it('refuses a teamId parameter: the team always comes from the token', async () => {
