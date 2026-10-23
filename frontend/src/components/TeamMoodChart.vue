@@ -22,6 +22,21 @@ ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, Filler, 
 
 const props = defineProps<{ daily: DailyStat[]; threshold: number }>()
 
+/** Saturday or Sunday ("2026-10-24"), read at noon to avoid any time zone shift */
+function isWeekend(isoDate: string): boolean {
+  const weekday = new Date(`${isoDate}T12:00:00`).getDay()
+  return weekday === 0 || weekday === 6
+}
+
+/**
+ * Working days only (plus a weekend day if it ever has enough answers):
+ * the curve stays continuous, and its only gaps are days hidden for anonymity.
+ */
+const days = computed(() => props.daily.filter((day) => !day.hidden || !isWeekend(day.date)))
+
+/** Last day with a visible average, drawn a little bigger */
+const lastVisible = computed(() => days.value.map((day) => day.hidden).lastIndexOf(false))
+
 /** Colors and fonts come from the design tokens (assets/tokens.css) */
 const css = getComputedStyle(document.documentElement)
 const token = (name: string) => css.getPropertyValue(name).trim()
@@ -40,7 +55,7 @@ function pointColor(context: ScriptableContext<'line'>): string {
   return value === null ? 'transparent' : (moodColors[Math.round(value) - 1] ?? primary)
 }
 
-/** Solid hairline at 3 (neutral mood), labelled at its right end, drawn behind the curve */
+/** Solid hairline at 3 (neutral mood, the 😐 of the axis), drawn behind the curve */
 const neutralLine: Plugin<'line'> = {
   id: 'neutralLine',
   beforeDatasetsDraw(chart) {
@@ -55,11 +70,25 @@ const neutralLine: Plugin<'line'> = {
     ctx.moveTo(chartArea.left, y)
     ctx.lineTo(chartArea.right, y)
     ctx.stroke()
-    ctx.globalAlpha = 1
-    ctx.fillStyle = muted
-    ctx.font = `12px ${bodyFont}`
-    ctx.textAlign = 'right'
-    ctx.fillText('neutre', chartArea.right, y - 6)
+    ctx.restore()
+  },
+}
+
+/** A soft band on each working day hidden for anonymity, so the gap reads as intended */
+const hiddenDays: Plugin<'line'> = {
+  id: 'hiddenDays',
+  beforeDatasetsDraw(chart) {
+    const { ctx, chartArea, scales } = chart
+    const x = scales.x
+    if (!x || days.value.length < 2) return
+    const step = (x.getPixelForValue(1) - x.getPixelForValue(0)) * 0.6
+    ctx.save()
+    ctx.fillStyle = border
+    days.value.forEach((day, index) => {
+      if (!day.hidden) return
+      const center = x.getPixelForValue(index)
+      ctx.fillRect(center - step / 2, chartArea.top, step, chartArea.bottom - chartArea.top)
+    })
     ctx.restore()
   },
 }
@@ -85,12 +114,12 @@ const crosshair: Plugin<'line'> = {
 }
 
 const data = computed<ChartData<'line', (number | null)[]>>(() => ({
-  labels: props.daily.map((day) => formatDayMonth(day.date)),
+  labels: days.value.map((day) => formatDayMonth(day.date)),
   datasets: [
     {
       label: 'Humeur moyenne',
       // null for hidden days: the line has a gap there
-      data: props.daily.map((day) => day.average),
+      data: days.value.map((day) => day.average),
       spanGaps: false,
       borderColor: primary,
       borderWidth: 3,
@@ -107,8 +136,9 @@ const data = computed<ChartData<'line', (number | null)[]>>(() => ({
         gradient.addColorStop(1, fillEnd)
         return gradient
       },
-      // Smaller points on long periods (90 days) so the curve stays readable
-      pointRadius: props.daily.length > 45 ? 2 : 4,
+      // Smaller points on long periods (90 days); the last known day stands out
+      pointRadius: (context) =>
+        context.dataIndex === lastVisible.value ? 6 : days.value.length > 45 ? 2 : 4,
       pointHoverRadius: 7,
       pointHitRadius: 14,
       pointBorderWidth: 2,
@@ -162,11 +192,11 @@ const options: ChartOptions<'line'> = {
       filter: (item) => item.parsed.y !== null,
       callbacks: {
         title: (items) => {
-          const day = props.daily[items[0]?.dataIndex ?? 0]
+          const day = days.value[items[0]?.dataIndex ?? 0]
           return day ? formatWeekday(day.date) : ''
         },
         label: (item) => `Moyenne : ${formatAverage(item.parsed.y ?? 0)} / 5`,
-        afterLabel: (item) => `${props.daily[item.dataIndex]?.responses ?? 0} réponses`,
+        afterLabel: (item) => `${days.value[item.dataIndex]?.responses ?? 0} réponses`,
       },
     },
   },
@@ -179,7 +209,7 @@ const options: ChartOptions<'line'> = {
       <Line
         :data="data"
         :options="options"
-        :plugins="[neutralLine, crosshair]"
+        :plugins="[hiddenDays, neutralLine, crosshair]"
         role="img"
         aria-label="Courbe de l’humeur moyenne de l’équipe, jour par jour. Le détail est disponible dans le tableau sous le graphe."
       />
@@ -201,7 +231,7 @@ const options: ChartOptions<'line'> = {
             </tr>
           </thead>
           <tbody>
-            <tr v-for="day in daily" :key="day.date" :class="{ hidden: day.hidden }">
+            <tr v-for="day in days" :key="day.date" :class="{ hidden: day.hidden }">
               <th scope="row">{{ formatWeekday(day.date) }}</th>
               <template v-if="day.hidden">
                 <td colspan="2" class="muted">Masqué (moins de {{ threshold }} réponses)</td>

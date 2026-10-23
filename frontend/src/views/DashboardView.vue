@@ -267,7 +267,8 @@ onMounted(() => {
     grid-row: 3;
   }
 
-  .area-kpis {
+  /* Same specificity as the base rules below would lose: stacked tiles beside the chart */
+  .indicators.area-kpis {
     grid-column: 9 / -1;
     grid-row: 3;
     grid-template-columns: minmax(0, 1fr);
@@ -286,7 +287,7 @@ onMounted(() => {
     font-size: var(--text-3xl);
   }
 
-  .indicator {
+  .card.indicator {
     justify-content: center;
     padding: var(--space-md);
   }

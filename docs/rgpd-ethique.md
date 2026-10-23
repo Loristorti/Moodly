@@ -47,7 +47,7 @@ Ces règles sont vérifiées par des tests automatiques. L'un d'eux contrôle **
 
 Avec une ou deux réponses dans la journée, un manager pourrait deviner qui a répondu : « seule Alice était là lundi ». Moodly applique donc un **seuil de 3 réponses** :
 
-- un jour sous le seuil est **masqué** dans le graphe : la courbe y fait un trou, et la moyenne comme le nombre de réponses ne sont pas transmis ;
+- un jour sous le seuil est **masqué** dans le graphe : une bande grise remplace le point, et la moyenne comme le nombre de réponses ne sont pas transmis ;
 - si le **total** de réponses de la période est sous le seuil, la moyenne globale et les classements de thèmes ne sont pas affichés ;
 - la **moyenne globale exclut les jours masqués**. Sans cette précaution, on pourrait retrouver la moyenne d'un jour masqué par soustraction, à partir de la moyenne globale et des jours visibles. La moyenne de la **période précédente**, utilisée pour afficher l'évolution, suit la même règle ;
 - la **météo de l'équipe**, visible par les employés, ne donne qu'une **catégorie** parmi 4 (☀️ ⛅ ☁️ 🌧️), jamais un chiffre. Elle porte sur les **jours visibles** des 7 jours précédents et **exclut le jour même** : un salarié ne peut pas comparer la météo avant et après sa propre réponse, ni en déduire celle d'un collègue ;

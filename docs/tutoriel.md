@@ -119,10 +119,11 @@ Le graphe **« L'humeur, jour par jour »** montre l'humeur moyenne de l'équipe
 | Élément | Signification |
 |---|---|
 | Axe vertical | l'échelle des humeurs, de 😞 (1) à 😄 (5) |
-| Axe horizontal | les jours, au format JJ/MM |
+| Axe horizontal | les jours ouvrés (du lundi au vendredi), au format JJ/MM |
 | Points | la moyenne du jour ; leur couleur reprend le niveau d'humeur (rouge quand c'est bas, vert quand c'est haut) |
-| Ligne fine « neutre » | le niveau 3 (😐) : au-dessus, l'équipe va plutôt bien ; en dessous, plutôt mal |
-| **Trous dans la courbe** | des **jours masqués** : moins de 3 réponses ce jour-là (souvent les week-ends), pour protéger l'anonymat |
+| Ligne fine au niveau 😐 | le niveau 3, neutre : au-dessus, l'équipe va plutôt bien ; en dessous, plutôt mal |
+| **Bandes grises** | des **jours masqués** : moins de 3 réponses ce jour-là, pour protéger l'anonymat. La courbe s'interrompt à cet endroit |
+| Point plus gros | le dernier jour connu |
 
 En touchant ou en survolant un point, une bulle affiche le jour, la moyenne et le nombre de réponses.
 
